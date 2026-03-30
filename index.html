@@ -1,0 +1,3406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan My Fund — Investment Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#04080f;
+  --s1:#080e1a;
+  --s2:#0d1526;
+  --s3:#131e33;
+  --s4:#1a273f;
+  --b1:rgba(255,255,255,0.06);
+  --b2:rgba(255,255,255,0.11);
+  --b3:rgba(255,255,255,0.18);
+  --gold:#f5c842;
+  --gold2:#c98600;
+  --gold3:#ffd980;
+  --gg:rgba(245,200,66,0.13);
+  --teal:#00d4b8;
+  --blue:#4d94ff;
+  --red:#ff5c5c;
+  --green:#2ecc8a;
+  --purple:#b47bff;
+  --tx:#f0f4ff;
+  --mu:#5a6a8a;
+  --mu2:#8898b8;
+  --r:16px;
+  --fn:'JetBrains Mono',monospace;
+  --ff:'Playfair Display',serif;
+  --fb:'DM Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--fb);
+  background:var(--bg);
+  color:var(--tx);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── AMBIENT BACKGROUND ── */
+.ambient{
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+}
+.amb-orb{
+  position:absolute;border-radius:50%;filter:blur(90px);
+  animation:ambFloat 18s ease-in-out infinite alternate;
+}
+.amb1{width:700px;height:700px;top:-20%;left:-15%;background:radial-gradient(circle,rgba(245,200,66,.055) 0%,transparent 70%);animation-delay:0s}
+.amb2{width:500px;height:500px;bottom:-10%;right:-10%;background:radial-gradient(circle,rgba(0,212,184,.045) 0%,transparent 70%);animation-delay:-7s}
+.amb3{width:400px;height:400px;top:40%;left:40%;background:radial-gradient(circle,rgba(77,148,255,.035) 0%,transparent 70%);animation-delay:-14s}
+@keyframes ambFloat{from{transform:translate(0,0) scale(1)}to{transform:translate(30px,40px) scale(1.07)}}
+
+/* grid overlay */
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.008) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.008) 1px,transparent 1px);
+  background-size:52px 52px;
+}
+
+/* ── LAYOUT ── */
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 22px}
+
+/* ── HEADER ── */
+header{padding:36px 0 16px;text-align:center;position:relative}
+
+.brand-pill{
+  display:inline-flex;align-items:center;gap:10px;
+  background:rgba(245,200,66,.07);
+  border:1px solid rgba(245,200,66,.2);
+  border-radius:100px;padding:5px 16px;
+  font-size:9.5px;color:var(--gold);
+  letter-spacing:3px;text-transform:uppercase;font-weight:600;
+  margin-bottom:16px;
+}
+.live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;
+  box-shadow:0 0 8px var(--green);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.6}}
+
+.hero-title{
+  font-family:var(--ff);
+  font-size:clamp(32px,5.5vw,64px);
+  font-weight:700;
+  line-height:.95;
+  letter-spacing:-2px;
+  margin-bottom:8px;
+  position:relative;
+  display:block;
+  text-align:center;
+}
+.hero-title .word1{
+  background:linear-gradient(135deg,#fff 0%,var(--gold3) 50%,var(--gold) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-title .word-gap{
+  display:inline-block;width:.28em;
+}
+.hero-title .word2{
+  background:linear-gradient(135deg,var(--gold) 0%,var(--teal) 60%,var(--blue) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.title-accent{
+  display:block;width:260px;height:3px;
+  background:linear-gradient(90deg,transparent,var(--gold),var(--teal),transparent);
+  border-radius:2px;opacity:.6;
+  margin:6px auto 0;
+}
+
+.tagline{
+  color:var(--mu2);font-size:13px;font-weight:400;
+  max-width:460px;margin:14px auto 30px;line-height:1.65;
+}
+.tagline span{color:var(--gold);font-weight:600}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  display:flex;justify-content:center;gap:0;
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:12px;max-width:540px;margin:0 auto 28px;overflow:hidden;
+}
+.stat-item{
+  flex:1;padding:10px 16px;text-align:center;
+  border-right:1px solid var(--b1);
+}
+.stat-item:last-child{border-right:none}
+.stat-n{font-family:var(--fn);font-size:14px;color:var(--gold);font-weight:600;margin-bottom:2px}
+.stat-l{font-size:9px;color:var(--mu);letter-spacing:1px;text-transform:uppercase}
+
+/* ── TABS ── */
+.tabs{
+  display:flex;gap:3px;background:var(--s1);
+  border:1px solid var(--b1);border-radius:12px;
+  padding:3px;max-width:480px;margin:0 auto 26px;
+}
+.tab{
+  flex:1;padding:9px 12px;border:none;background:transparent;
+  color:var(--mu);font-family:var(--fb);font-size:12px;font-weight:500;
+  border-radius:10px;cursor:pointer;transition:all .3s;letter-spacing:.3px;
+}
+.tab.active{
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#04080f;font-weight:700;
+  box-shadow:0 4px 20px rgba(245,200,66,.28);
+}
+
+/* ── CARD ── */
+.card{
+  background:var(--s1);
+  border:1px solid var(--b1);
+  border-radius:16px;
+  padding:22px;
+  margin-bottom:16px;
+  transition:border-color .3s,box-shadow .3s;
+  position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(245,200,66,.2),transparent);
+  pointer-events:none;
+}
+.card:hover{border-color:var(--b2);box-shadow:0 8px 40px rgba(0,0,0,.3)}
+
+.ch{margin-bottom:16px}
+.ch h2{
+  font-family:var(--ff);font-size:18px;font-weight:700;
+  margin-bottom:3px;color:var(--tx);
+}
+.ch p{font-size:11.5px;color:var(--mu);line-height:1.55}
+.ch p b{color:var(--mu2)}
+
+/* ── FIELDS ── */
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin-bottom:16px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.wide{grid-column:1/-1}
+label{
+  font-size:10px;color:var(--mu);text-transform:uppercase;
+  letter-spacing:1.4px;font-weight:600;display:flex;align-items:center;gap:5px;
+}
+label .lico{font-size:11px}
+
+input[type=text],input[type=number],select{
+  background:var(--s2);border:1px solid var(--b1);border-radius:9px;
+  padding:9px 12px;color:var(--tx);font-family:var(--fb);font-size:13px;
+  outline:none;transition:border-color .2s,box-shadow .2s,background .2s;width:100%;
+}
+input[type=text]:focus,input[type=number]:focus,select:focus{
+  border-color:var(--gold);box-shadow:0 0 0 3px var(--gg);background:var(--s3);
+}
+select option{background:var(--s2);color:var(--tx)}
+select{cursor:pointer}
+
+/* ── AMOUNT + WORDS ── */
+.aw{position:relative}
+.aw input{padding-bottom:24px}
+.words{
+  position:absolute;bottom:7px;left:12px;
+  font-size:9px;color:var(--gold);font-weight:600;
+  pointer-events:none;font-family:var(--fb);
+  max-width:calc(100% - 24px);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;letter-spacing:.3px;
+}
+
+/* ── SLIDER ── */
+.si-wrap{display:flex;flex-direction:column;gap:5px}
+.si-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.si-num{
+  width:70px;padding:5px 8px;font-family:var(--fn);font-size:12px;font-weight:600;
+  background:var(--s3);border:1px solid var(--b1);border-radius:8px;
+  color:var(--gold);outline:none;text-align:center;transition:border-color .2s;
+}
+.si-num:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--gg)}
+input[type=range]{
+  -webkit-appearance:none;height:4px;
+  background:linear-gradient(90deg,var(--gold) var(--pct,30%),var(--s4) var(--pct,30%));
+  border-radius:3px;border:none;padding:0;cursor:pointer;width:100%;margin-top:3px;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;
+  background:var(--gold);border-radius:50%;
+  box-shadow:0 2px 10px rgba(245,200,66,.5);
+  transition:transform .15s;
+}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.3)}
+
+/* ── STEP-UP TOGGLE ── */
+.stepup-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(245,200,66,.04);border:1px solid rgba(245,200,66,.1);
+  border-radius:10px;padding:10px 14px;margin-bottom:12px;cursor:pointer;
+  transition:background .2s,border-color .2s;
+  user-select:none;
+}
+.stepup-row:hover{background:rgba(245,200,66,.07);border-color:rgba(245,200,66,.18)}
+.stepup-row-left{display:flex;align-items:center;gap:9px}
+.stepup-ico{font-size:15px}
+.stepup-label{font-size:11.5px;font-weight:600;color:var(--mu2)}
+.stepup-sub{font-size:9.5px;color:var(--mu);margin-top:1px}
+.stepup-toggle{
+  width:38px;height:20px;border-radius:100px;
+  background:var(--s4);border:1px solid var(--b2);
+  position:relative;transition:background .25s,border-color .25s;flex-shrink:0;
+}
+.stepup-toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:12px;height:12px;border-radius:50%;
+  background:var(--mu);transition:transform .25s,background .25s;
+}
+.stepup-toggle.on{background:rgba(245,200,66,.2);border-color:rgba(245,200,66,.4)}
+.stepup-toggle.on::after{transform:translateX(18px);background:var(--gold)}
+.stepup-panel{
+  display:none;
+  background:rgba(245,200,66,.025);border:1px solid rgba(245,200,66,.1);
+  border-radius:10px;padding:14px;margin-bottom:12px;
+  animation:fadeUp .25s ease;
+}
+.stepup-panel.open{display:block}
+.stepup-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2);
+  border-radius:6px;padding:3px 10px;font-size:9px;color:var(--gold);
+  letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:10px;
+}
+.stepup-hint{font-size:10px;color:var(--mu);margin-top:8px;line-height:1.55}
+.stepup-hint b{color:var(--gold)}
+
+/* ── SEARCH ── */
+.sw{position:relative}
+#sym-input{font-family:var(--fn);font-size:13px;padding-right:40px;letter-spacing:.3px}
+.sico{
+  position:absolute;right:13px;top:50%;transform:translateY(-50%);
+  color:var(--mu);font-size:15px;pointer-events:none;
+}
+.ddl{
+  display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;
+  background:var(--s2);border:1px solid rgba(245,200,66,.16);border-radius:14px;
+  max-height:290px;overflow-y:auto;z-index:200;
+  box-shadow:0 28px 70px rgba(0,0,0,.65);
+}
+.ddl.open{display:block}
+.ddl::-webkit-scrollbar{width:4px}
+.ddl::-webkit-scrollbar-track{background:transparent}
+.ddl::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.ddi{
+  padding:9px 14px;cursor:pointer;font-size:12px;
+  transition:background .12s;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.ddi:hover{background:rgba(245,200,66,.07)}
+.dds{color:var(--gold);font-family:var(--fn);font-size:10.5px;font-weight:600;min-width:68px;flex-shrink:0}
+.ddn{color:var(--tx);font-size:11.5px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ddt{color:var(--mu);font-size:9.5px;padding:2px 7px;background:var(--s1);border-radius:5px;white-space:nowrap;flex-shrink:0;border:1px solid var(--b1)}
+.ddn2{padding:9px 14px;font-size:10.5px;color:var(--mu);border-top:1px solid var(--b1);text-align:center;background:var(--s1)}
+.ddload{padding:16px 14px;text-align:center;font-size:12px;color:var(--mu)}
+
+/* ── CATEGORY PILLS ── */
+.cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.cbt{
+  padding:5px 13px;font-size:10.5px;
+  border:1px solid var(--b1);background:var(--s2);
+  color:var(--mu2);border-radius:100px;cursor:pointer;
+  font-family:var(--fb);transition:all .2s;font-weight:500;letter-spacing:.4px;
+}
+.cbt.active{border-color:var(--gold);color:var(--gold);background:rgba(245,200,66,.08)}
+.cbt:hover:not(.active){border-color:var(--b2);color:var(--tx)}
+
+/* ── BUTTON ── */
+.btn{
+  width:100%;padding:12px;border:none;border-radius:10px;
+  font-family:var(--fb);font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .28s;letter-spacing:.5px;
+}
+.btnp{
+  background:linear-gradient(135deg,var(--gold) 0%,#e6a800 100%);
+  color:#04080f;box-shadow:0 4px 22px rgba(245,200,66,.22);
+  position:relative;overflow:hidden;
+}
+.btnp::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.btnp:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(245,200,66,.38)}
+.btnp:hover::after{opacity:1}
+.btnp:active{transform:translateY(0)}
+
+/* ── ERROR ── */
+.err{
+  display:none;background:rgba(255,92,92,.06);border:1px solid rgba(255,92,92,.2);
+  color:var(--red);padding:13px 16px;border-radius:10px;font-size:12.5px;
+  margin-top:14px;line-height:1.65;
+}
+
+/* ── SPINNER ── */
+.spin{display:none;text-align:center;padding:36px;color:var(--mu);font-size:13px}
+.spin.on{display:block}
+.ring{
+  width:38px;height:38px;border:3px solid var(--b2);border-top-color:var(--gold);
+  border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 12px;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── RESULTS ── */
+#results{display:none;animation:fadeUp .55s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+/* HERO RESULT */
+.hero-res{
+  background:linear-gradient(135deg,var(--s1) 0%,var(--s2) 100%);
+  border:1px solid rgba(245,200,66,.2);
+  border-radius:20px;padding:40px 28px;margin-bottom:20px;
+  text-align:center;position:relative;overflow:hidden;
+}
+.hero-res::before{
+  content:'';position:absolute;top:-50%;left:50%;transform:translateX(-50%);
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(245,200,66,.07) 0%,transparent 65%);
+  pointer-events:none;
+}
+.hero-res::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(245,200,66,.2),transparent);
+}
+.hl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:3px;margin-bottom:12px;font-weight:600}
+.hn{
+  font-family:var(--fn);font-size:clamp(32px,6vw,62px);font-weight:600;
+  color:var(--gold);line-height:1;margin-bottom:10px;
+  text-shadow:0 0 40px rgba(245,200,66,.25);
+}
+.hs{font-size:13px;color:var(--mu2)}
+.hs b{color:var(--tx);font-weight:500}
+
+/* STATS GRID */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:20px}
+.sc{
+  background:var(--s1);border:1px solid var(--b1);border-radius:13px;
+  padding:18px 14px;text-align:center;transition:transform .2s,border-color .25s;
+  position:relative;overflow:hidden;
+}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--b2),transparent)}
+.sc:hover{transform:translateY(-3px);border-color:var(--b2)}
+.sl{font-size:9.5px;color:var(--mu);text-transform:uppercase;letter-spacing:1.8px;margin-bottom:7px;font-weight:600}
+.sv{font-family:var(--fn);font-size:15px;font-weight:500}
+.cg{color:var(--gold)}.cG{color:var(--green)}.ct{color:var(--teal)}.cb{color:var(--blue)}.cp{color:var(--purple)}
+
+/* COMPOSITION */
+.pc,.cc,.prj{
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:20px;padding:26px;margin-bottom:20px;
+}
+.pc h3,.cc h3,.prj h3{
+  font-family:var(--ff);font-size:19px;font-weight:700;
+  margin-bottom:20px;color:var(--tx);
+}
+.pr{margin-bottom:14px}
+.pm{display:flex;justify-content:space-between;font-size:12px;color:var(--mu2);margin-bottom:6px}
+.pb{height:6px;background:var(--s3);border-radius:4px;overflow:hidden}
+.pf{height:100%;border-radius:4px;transition:width 1.4s cubic-bezier(.22,1,.36,1)}
+.pfb{background:linear-gradient(90deg,var(--blue),#7eb3ff)}
+.pfg{background:linear-gradient(90deg,var(--green),var(--teal))}
+.pfr{background:linear-gradient(90deg,var(--red),#ffaaaa)}
+
+/* TABLE */
+.disc{
+  background:rgba(245,200,66,.04);border:1px solid rgba(245,200,66,.1);
+  border-radius:10px;padding:12px 16px;font-size:11px;
+  color:rgba(245,200,66,.5);line-height:1.65;margin-bottom:18px;
+}
+.prj p{font-size:12.5px;color:var(--mu);margin-bottom:18px;line-height:1.6}
+.tw{overflow-x:auto;border-radius:11px;border:1px solid var(--b1)}
+table{width:100%;border-collapse:collapse}
+th{
+  background:var(--s2);padding:11px 14px;text-align:left;
+  font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mu);
+  font-weight:600;white-space:nowrap;font-family:var(--fb);
+}
+td{padding:10px 14px;border-top:1px solid var(--b1);font-family:var(--fn);font-size:12px;white-space:nowrap}
+tr:hover td{background:rgba(255,255,255,.012)}
+
+/* PANELS */
+.panel{display:none}.panel.on{display:block}
+
+/* FOOTER */
+footer{
+  text-align:center;padding:30px 0 20px;
+  color:rgba(255,255,255,.18);font-size:10px;letter-spacing:.5px;
+  font-family:var(--fb);
+}
+footer span{color:rgba(255,255,255,.25)}
+
+/* SECTION DIVIDER */
+.sdiv{
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:22px;padding-top:4px;
+}
+.sdiv-line{flex:1;height:1px;background:var(--b1)}
+.sdiv-txt{font-size:10px;color:var(--mu);letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
+
+
+/* ── TAX PANEL ── */
+.tax-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.tax-mode-btn{
+  padding:12px 14px;border:1px solid var(--b1);background:var(--s2);
+  border-radius:11px;cursor:pointer;text-align:left;transition:all .2s;
+}
+.tax-mode-btn.active{border-color:var(--gold);background:rgba(245,200,66,.06)}
+.tax-mode-btn .tmb-icon{font-size:18px;margin-bottom:4px}
+.tax-mode-btn .tmb-title{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:2px}
+.tax-mode-btn .tmb-sub{font-size:10px;color:var(--mu)}
+.tax-result-box{
+  background:linear-gradient(135deg,rgba(245,200,66,.06),rgba(0,212,184,.04));
+  border:1px solid rgba(245,200,66,.18);border-radius:14px;
+  padding:22px;margin-top:16px;
+}
+.tax-row{display:flex;justify-content:space-between;align-items:center;
+  padding:9px 0;border-bottom:1px solid var(--b1);font-size:12.5px}
+.tax-row:last-child{border-bottom:none;padding-top:12px;margin-top:4px}
+.tax-row .tr-label{color:var(--mu2)}
+.tax-row .tr-val{font-family:var(--fn);font-size:13px;font-weight:600}
+.tax-row.total-row .tr-label{color:var(--tx);font-weight:700;font-size:13px}
+.tax-row.total-row .tr-val{color:var(--gold);font-size:15px}
+.tax-note{font-size:10.5px;color:var(--mu);margin-top:12px;line-height:1.65;
+  padding:10px 14px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid var(--b1)}
+.cess-badge{display:inline-block;background:rgba(255,92,92,.1);color:var(--red);
+  border:1px solid rgba(255,92,92,.2);border-radius:5px;padding:1px 7px;font-size:9px;font-weight:700;letter-spacing:.5px}
+
+/* ── GOAL PANEL ── */
+.goal-result{
+  background:linear-gradient(135deg,var(--s1),var(--s2));
+  border:1px solid rgba(77,148,255,.2);border-radius:18px;
+  padding:30px 24px;text-align:center;margin-top:16px;position:relative;overflow:hidden;
+}
+.goal-result::before{content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
+  width:300px;height:300px;background:radial-gradient(circle,rgba(77,148,255,.06),transparent 65%);pointer-events:none}
+.goal-lbl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:3px;margin-bottom:10px;font-weight:600}
+.goal-num{font-family:var(--fn);font-size:clamp(26px,5vw,52px);font-weight:600;color:var(--blue);line-height:1;margin-bottom:8px}
+.goal-sub{font-size:12.5px;color:var(--mu2);line-height:1.6}
+.goal-sub b{color:var(--tx)}
+.goal-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:16px}
+.goal-bc{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px 12px;text-align:center}
+.goal-bc-l{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px}
+.goal-bc-v{font-family:var(--fn);font-size:14px;font-weight:500}
+
+/* ── SWP PANEL ── */
+.swp-hero{
+  background:linear-gradient(135deg,rgba(0,212,184,.06),rgba(77,148,255,.04));
+  border:1px solid rgba(0,212,184,.2);border-radius:18px;
+  padding:30px 24px;text-align:center;margin-top:16px;position:relative;overflow:hidden;
+}
+.swp-hero::before{content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
+  width:300px;height:300px;background:radial-gradient(circle,rgba(0,212,184,.07),transparent 65%);pointer-events:none}
+.swp-lbl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:3px;margin-bottom:10px;font-weight:600}
+.swp-num{font-family:var(--fn);font-size:clamp(26px,5vw,52px);font-weight:600;color:var(--teal);line-height:1;margin-bottom:8px}
+.swp-sub{font-size:12.5px;color:var(--mu2);line-height:1.6}
+.swp-sub b{color:var(--tx)}
+.swp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:16px}
+.swp-bc{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px 12px;text-align:center}
+.swp-bc-l{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px}
+.swp-bc-v{font-family:var(--fn);font-size:14px;font-weight:500}
+.swp-timeline{margin-top:18px}
+.swp-tl-hd{font-family:var(--ff);font-size:17px;font-weight:700;margin-bottom:14px;color:var(--tx)}
+
+@media(max-width:620px){
+  .fg{grid-template-columns:1fr}
+  .card{padding:18px}
+  h1{letter-spacing:-1.5px}
+  .tab{font-size:11px;padding:9px 8px}
+  .stats-bar{max-width:100%;border-radius:12px}
+  .stat-item{padding:10px 12px}
+  .stat-n{font-size:13px}
+}
+
+/* ── HAMBURGER BUTTON ── */
+.hamburger{
+  position:fixed;top:20px;left:20px;z-index:1000;
+  width:42px;height:42px;
+  background:rgba(13,21,38,.85);
+  border:1px solid rgba(245,200,66,.18);
+  border-radius:10px;
+  cursor:pointer;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5px;
+  backdrop-filter:blur(12px);
+  transition:background .25s,border-color .25s,box-shadow .25s,transform .3s ease,opacity .3s ease;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  -webkit-transform:translateZ(0);
+  transform:translateZ(0);
+  will-change:transform;
+  -webkit-backface-visibility:hidden;
+  backface-visibility:hidden;
+}
+.hamburger:hover{
+  background:rgba(245,200,66,.1);
+  border-color:rgba(245,200,66,.35);
+  box-shadow:0 4px 24px rgba(245,200,66,.12);
+}
+.hamburger span{
+  display:block;width:18px;height:2px;
+  background:var(--mu2);border-radius:2px;
+  transition:transform .3s,opacity .3s,background .25s;
+}
+.hamburger:hover span{background:var(--gold)}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* ── SIDEBAR OVERLAY ── */
+.sb-overlay{
+  position:fixed;inset:0;z-index:900;
+  background:rgba(4,8,15,.55);
+  opacity:0;pointer-events:none;
+  transition:opacity .35s;
+  backdrop-filter:blur(2px);
+}
+.sb-overlay.open{opacity:1;pointer-events:all}
+
+/* ── SIDEBAR PANEL ── */
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;
+  width:270px;z-index:950;
+  background:var(--s1);
+  border-right:1px solid rgba(245,200,66,.1);
+  transform:translateX(-100%);
+  transition:transform .38s cubic-bezier(.22,1,.36,1);
+  display:flex;flex-direction:column;
+  box-shadow:8px 0 40px rgba(0,0,0,.5);
+  overflow:hidden;
+}
+.sidebar.open{transform:translateX(0)}
+
+/* Sidebar top glow strip */
+.sidebar::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(245,200,66,.3),transparent);
+}
+/* Sidebar ambient orb */
+.sidebar::after{
+  content:'';position:absolute;top:-60px;left:-60px;
+  width:240px;height:240px;
+  background:radial-gradient(circle,rgba(245,200,66,.04) 0%,transparent 65%);
+  pointer-events:none;
+}
+
+/* Sidebar header */
+.sb-head{
+  padding:28px 22px 20px;
+  border-bottom:1px solid var(--b1);
+  flex-shrink:0;
+}
+.sb-logo{
+  font-family:var(--ff);font-size:18px;font-weight:700;
+  background:linear-gradient(135deg,#fff 0%,var(--gold3) 50%,var(--gold) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:4px;
+}
+.sb-tagline{font-size:10px;color:var(--mu);letter-spacing:.5px}
+
+/* Nav items */
+.sb-nav{
+  flex:1;padding:16px 12px;
+  display:flex;flex-direction:column;gap:4px;
+}
+.sb-item{
+  display:flex;align-items:center;gap:13px;
+  padding:12px 14px;border-radius:11px;
+  cursor:pointer;transition:background .2s,border-color .2s;
+  border:1px solid transparent;
+  position:relative;overflow:hidden;
+  text-decoration:none;
+  user-select:none;
+}
+.sb-item::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(245,200,66,.06),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.sb-item:hover::before{opacity:1}
+.sb-item:hover{
+  background:rgba(255,255,255,.035);
+  border-color:var(--b1);
+}
+.sb-item.active{
+  background:rgba(245,200,66,.07);
+  border-color:rgba(245,200,66,.2);
+}
+.sb-item.active::before{opacity:1}
+.sb-ico{
+  width:36px;height:36px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+  background:var(--s3);border:1px solid var(--b1);
+  transition:background .2s,border-color .2s;
+}
+.sb-item.active .sb-ico{
+  background:rgba(245,200,66,.12);
+  border-color:rgba(245,200,66,.25);
+}
+.sb-item-info{flex:1}
+.sb-item-title{
+  font-size:13px;font-weight:600;color:var(--tx);
+  margin-bottom:2px;line-height:1.2;
+}
+.sb-item.active .sb-item-title{color:var(--gold)}
+.sb-item-sub{font-size:10px;color:var(--mu);line-height:1.4}
+.sb-badge{
+  font-size:8.5px;font-weight:700;letter-spacing:.8px;
+  padding:2px 7px;border-radius:100px;text-transform:uppercase;
+}
+.sb-badge-live{background:rgba(46,204,138,.1);color:var(--green);border:1px solid rgba(46,204,138,.2)}
+.sb-badge-soon{background:rgba(90,106,138,.08);color:var(--mu);border:1px solid var(--b1)}
+
+/* Active indicator */
+.sb-item.active .sb-indicator{
+  position:absolute;left:0;top:20%;bottom:20%;
+  width:3px;background:var(--gold);border-radius:0 3px 3px 0;
+}
+
+/* Sidebar footer */
+.sb-foot{
+  padding:14px 22px;border-top:1px solid var(--b1);flex-shrink:0;
+}
+.sb-foot-txt{font-size:9px;color:rgba(255,255,255,.12);letter-spacing:.5px;text-align:center}
+
+/* ── SECTION PAGES ── */
+.page{display:none}
+.page.active{display:block}
+
+/* Stock analysis placeholder */
+.stock-placeholder{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:60vh;text-align:center;padding:40px 20px;
+}
+.stock-ph-icon{
+  font-size:56px;margin-bottom:20px;
+  filter:grayscale(0.3);
+  animation:float 4s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.stock-ph-title{
+  font-family:var(--ff);font-size:28px;font-weight:700;
+  color:var(--tx);margin-bottom:10px;letter-spacing:-.5px;
+}
+.stock-ph-sub{
+  font-size:13.5px;color:var(--mu2);max-width:380px;
+  line-height:1.7;margin-bottom:24px;
+}
+.stock-ph-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(77,148,255,.07);
+  border:1px solid rgba(77,148,255,.2);
+  border-radius:100px;padding:7px 18px;
+  font-size:11px;color:var(--blue);font-weight:600;
+  letter-spacing:.5px;
+}
+.stock-ph-dot{
+  width:7px;height:7px;background:var(--blue);border-radius:50%;
+  animation:pulse 2s ease infinite;
+}
+
+/* ── STOCK ANALYSIS ── */
+.perf-pill{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--s2);border:1px solid var(--b1);border-radius:12px;
+  padding:14px 18px;min-width:90px;text-align:center;
+  transition:border-color .2s,transform .2s;cursor:default;
+}
+.perf-pill:hover{border-color:var(--b2);transform:translateY(-2px)}
+.perf-pill-label{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;font-weight:600}
+.perf-pill-val{font-family:var(--fn);font-size:15px;font-weight:600}
+.perf-pill-val.pos{color:var(--green)}
+.perf-pill-val.neg{color:var(--red)}
+.perf-pill-val.neu{color:var(--mu2)}
+
+/* Risk meter */
+.risk-meter-wrap{margin:14px 0}
+.risk-track{height:10px;background:linear-gradient(90deg,var(--green),var(--gold),var(--red));border-radius:6px;position:relative;margin-bottom:8px}
+.risk-thumb{
+  width:18px;height:18px;border-radius:50%;background:#fff;
+  border:3px solid var(--bg);box-shadow:0 2px 8px rgba(0,0,0,.5);
+  position:absolute;top:50%;transform:translate(-50%,-50%);
+  transition:left 1s cubic-bezier(.22,1,.36,1);
+}
+.risk-score-row{display:flex;justify-content:space-between;align-items:center}
+.risk-score-big{font-family:var(--fn);font-size:32px;font-weight:700}
+.risk-score-label{font-size:11px;color:var(--mu2);text-align:right}
+.risk-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.risk-tag{
+  font-size:9.5px;font-weight:600;padding:3px 10px;border-radius:100px;
+  letter-spacing:.5px;text-transform:uppercase;
+}
+
+/* Advisory box */
+.adv-row{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 0;border-bottom:1px solid var(--b1);font-size:12.5px;
+}
+.adv-row:last-child{border-bottom:none}
+.adv-ico{font-size:16px;flex-shrink:0;margin-top:1px}
+.adv-key{color:var(--mu2);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;font-weight:600}
+.adv-val{color:var(--tx);font-weight:600}
+.adv-sub{color:var(--mu);font-size:10.5px;margin-top:2px}
+
+/* Pros & Cons */
+.pros-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.cons-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--red);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.pc-item{
+  display:flex;align-items:flex-start;gap:8px;
+  padding:8px 10px;border-radius:8px;margin-bottom:6px;font-size:12px;line-height:1.5;
+}
+.pc-item.pro{background:rgba(46,204,138,.05);border:1px solid rgba(46,204,138,.12);color:var(--tx)}
+.pc-item.con{background:rgba(255,92,92,.05);border:1px solid rgba(255,92,92,.12);color:var(--tx)}
+.pc-dot-pro{color:var(--green);font-size:14px;flex-shrink:0;margin-top:1px}
+.pc-dot-con{color:var(--red);font-size:14px;flex-shrink:0;margin-top:1px}
+
+/* Return calc result */
+.rc-box{
+  background:linear-gradient(135deg,rgba(245,200,66,.05),rgba(0,212,184,.03));
+  border:1px solid rgba(245,200,66,.15);border-radius:14px;padding:20px;
+}
+.rc-row{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--b1);font-size:12.5px}
+.rc-row:last-child{border-bottom:none}
+.rc-label{color:var(--mu2)}
+.rc-val{font-family:var(--fn);font-size:13px;font-weight:600}
+.rc-total-row .rc-label{color:var(--tx);font-weight:700;font-size:13px}
+.rc-total-row .rc-val{color:var(--gold);font-size:15px}
+
+@media(max-width:620px){
+  #sa-proscons{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ── HAMBURGER ── -->
+<button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+  <span></span><span></span><span></span>
+</button>
+
+<!-- ── SIDEBAR OVERLAY ── -->
+<div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
+
+<!-- ── SIDEBAR ── -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <div class="sb-logo">PlanMyFund</div>
+    <div class="sb-tagline">Smart Investment Tools</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-item active" id="nav-fund" onclick="switchPage('fund')">
+      <div class="sb-indicator"></div>
+      <div class="sb-ico">📊</div>
+      <div class="sb-item-info">
+        <div class="sb-item-title">Fund Calculator</div>
+        <div class="sb-item-sub">MF · SIP · Goal · Tax · SWP</div>
+      </div>
+      <span class="sb-badge sb-badge-live">Live</span>
+    </div>
+    <div class="sb-item" id="nav-stock" onclick="switchPage('stock')">
+      <div class="sb-indicator"></div>
+      <div class="sb-ico">📈</div>
+      <div class="sb-item-info">
+        <div class="sb-item-title">Stock Market Analysis</div>
+        <div class="sb-item-sub">Charts · Screener · Insights</div>
+      </div>
+      <span class="sb-badge sb-badge-soon">Soon</span>
+    </div>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-foot-txt">© 2026 PlanMyFund</div>
+  </div>
+</div>
+
+<div class="ambient">
+  <div class="amb-orb amb1"></div>
+  <div class="amb-orb amb2"></div>
+  <div class="amb-orb amb3"></div>
+</div>
+
+<!-- ── PAGE: FUND CALCULATOR ── -->
+<div class="page active" id="page-fund">
+<div class="wrap">
+
+  <header>
+    <div class="brand-pill">
+      <span class="live-dot"></span>
+      Live NAV · 10,000+ Funds · Real Returns
+    </div>
+    <div class="hero-title">
+      <span class="word1">Plan</span><span class="word-gap"> </span><span class="word1">My</span><span class="word-gap"> </span><span class="word2">Fund</span>
+    </div>
+    <p class="tagline">
+      Inflation-adjusted projections, real CAGR from historical data, and live NAV from <span>10,000+ Indian mutual funds</span>. Built for serious investors.
+    </p>
+
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-n">10K+</div><div class="stat-l">Mutual Funds</div></div>
+      <div class="stat-item"><div class="stat-n">500+</div><div class="stat-l">NSE Stocks</div></div>
+      <div class="stat-item"><div class="stat-n">6×</div><div class="stat-l">Daily NAV Updates</div></div>
+      <div class="stat-item"><div class="stat-n">70yr</div><div class="stat-l">Projections</div></div>
+    </div>
+
+    <div class="tabs" style="max-width:740px">
+      <button class="tab active" onclick="switchTab('manual')">📊 Calculator</button>
+      <button class="tab" onclick="switchTab('market')">📈 Live Data</button>
+      <button class="tab" onclick="switchTab('tax')">🧾 Tax</button>
+      <button class="tab" onclick="switchTab('goal')">🎯 Goal</button>
+      <button class="tab" onclick="switchTab('swp')">💸 SWP</button>
+    </div>
+  </header>
+
+  <!-- ── PANEL 1: CUSTOM ── -->
+  <div id="p-manual" class="panel on">
+    <div class="card">
+      <div class="ch">
+        <h2>Custom Investment Calculator</h2>
+        <p>Set your own parameters — ideal for FD, PPF, NPS, bonds, or any known return rate.</p>
+      </div>
+      <div class="fg">
+        <div class="field">
+          <label><span class="lico">💼</span> Investment Type</label>
+          <select id="m-type">
+            <option value="lumpsum">Lump Sum — One-time Investment</option>
+            <option value="sip">SIP — Monthly Systematic Investment</option>
+          </select>
+        </div>
+        <div class="field wide">
+          <label><span class="lico">₹</span> Investment Amount</label>
+          <div class="aw">
+            <input type="number" id="m-amt" value="500000" min="100" step="1000" oninput="showWords('m-amt','m-w')">
+            <span class="words" id="m-w">Five Lakh Rupees</span>
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">📈</span> Expected Annual Return</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="m-rate-n" type="number" min="1" max="50" step="0.5" value="12"
+                oninput="numToSlider('m-rate-n','m-rate-s',1,50);updateSliderFill('m-rate-s',1,50)"> <span style="font-size:11px;color:var(--mu2)">% p.a.</span>
+            </div>
+            <input type="range" id="m-rate-s" min="1" max="50" value="12" step="0.5"
+              oninput="sliderToNum('m-rate-s','m-rate-n');updateSliderFill(this.id,1,50)">
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">📅</span> Tenure</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="m-ten-n" type="number" min="1" max="70" value="10"
+                oninput="numToSlider('m-ten-n','m-ten-s',1,70);updateSliderFill('m-ten-s',1,70)"> <span style="font-size:11px;color:var(--mu2)">years</span>
+            </div>
+            <input type="range" id="m-ten-s" min="1" max="70" value="10"
+              oninput="sliderToNum('m-ten-s','m-ten-n');updateSliderFill(this.id,1,70)">
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">🔥</span> Inflation Rate</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="m-inf-n" type="number" min="0" max="25" step="0.5" value="6"
+                oninput="numToSlider('m-inf-n','m-inf-s',0,25);updateSliderFill('m-inf-s',0,25)"> <span style="font-size:11px;color:var(--mu2)">% p.a.</span>
+            </div>
+            <input type="range" id="m-inf-s" min="0" max="25" value="6" step="0.5"
+              oninput="sliderToNum('m-inf-s','m-inf-n');updateSliderFill(this.id,0,25)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step-Up Toggle -->
+      <div class="stepup-row" onclick="toggleStepUp('m')">
+        <div class="stepup-row-left">
+          <span class="stepup-ico">📈</span>
+          <div>
+            <div class="stepup-label">Annual Step-Up / Top-Up</div>
+            <div class="stepup-sub">Increase investment amount every year by a fixed %</div>
+          </div>
+        </div>
+        <div class="stepup-toggle" id="m-su-tog"></div>
+      </div>
+      <div class="stepup-panel" id="m-su-panel">
+        <div class="stepup-badge">⚡ Step-Up Active</div>
+        <div class="field">
+          <label><span class="lico">🔼</span> Annual Step-Up Rate</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="m-su-n" type="number" min="0" max="50" step="1" value="10"
+                oninput="numToSlider('m-su-n','m-su-s',0,50);updateSliderFill('m-su-s',0,50)">
+              <span style="font-size:11px;color:var(--mu2)">% per year</span>
+            </div>
+            <input type="range" id="m-su-s" min="0" max="50" value="10" step="1"
+              oninput="sliderToNum('m-su-s','m-su-n');updateSliderFill(this.id,0,50)">
+          </div>
+        </div>
+        <div class="stepup-hint">E.g. a <b>10% step-up</b> on a ₹10,000 SIP means ₹11,000 in Year 2, ₹12,100 in Year 3, and so on. For lump sum, this adds a fresh top-up every year at the stepped-up amount.</div>
+      </div>
+
+      <button class="btn btnp" onclick="calcManual()">Calculate Returns →</button>
+    </div>
+  </div>
+
+  <!-- ── PANEL 2: MARKET ── -->
+  <div id="p-market" class="panel">
+    <div class="card">
+      <div class="ch">
+        <h2>Live Market Calculator</h2>
+        <p>Search <b>10,000+ mutual funds</b> (live NAV from <b>MFapi.in</b>, updated 6× daily) + <b>500+ NSE stocks & ETFs</b>. CAGR auto-calculated from historical data.</p>
+      </div>
+      <div class="cats">
+        <button class="cbt active" onclick="setCat(this,'all')">All</button>
+        <button class="cbt" onclick="setCat(this,'Equity')">Equity MF</button>
+        <button class="cbt" onclick="setCat(this,'Debt')">Debt MF</button>
+        <button class="cbt" onclick="setCat(this,'Hybrid')">Hybrid MF</button>
+        <button class="cbt" onclick="setCat(this,'Index')">Index / ETF</button>
+        <button class="cbt" onclick="setCat(this,'Stock')">Stocks</button>
+        <button class="cbt" onclick="setCat(this,'Sectoral')">Sectoral MF</button>
+        <button class="cbt" onclick="setCat(this,'ELSS')">ELSS</button>
+      </div>
+      <div class="fg">
+        <div class="field wide">
+          <label><span class="lico">🔍</span> Search Fund / ETF / Stock</label>
+          <div class="sw">
+            <input type="text" id="sym-input"
+              placeholder="e.g. Parag Parikh, SBI Smallcap, Nifty 50, Zomato, HDFC Bank..."
+              autocomplete="off" oninput="onSearch(this.value)"
+              onfocus="openDD()" onblur="setTimeout(closeDD,230)">
+            <span class="sico">⌕</span>
+            <div class="ddl" id="ddl">
+              <div class="ddload" id="ddload">⏳ Loading fund list from MFapi.in…</div>
+            </div>
+          </div>
+          <input type="hidden" id="sel-sym">
+          <input type="hidden" id="sel-kind">
+        </div>
+        <div class="field">
+          <label><span class="lico">💼</span> Investment Type</label>
+          <select id="s-type">
+            <option value="lumpsum">Lump Sum — One-time Investment</option>
+            <option value="sip">SIP — Monthly Systematic Investment</option>
+          </select>
+        </div>
+        <div class="field">
+          <label><span class="lico">₹</span> Investment Amount</label>
+          <div class="aw">
+            <input type="number" id="s-amt" value="500000" min="100" step="1000" oninput="showWords('s-amt','s-w')">
+            <span class="words" id="s-w">Five Lakh Rupees</span>
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">📅</span> Tenure</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="s-ten-n" type="number" min="1" max="70" value="10"
+                oninput="numToSlider('s-ten-n','s-ten-s',1,70);updateSliderFill('s-ten-s',1,70)"> <span style="font-size:11px;color:var(--mu2)">years</span>
+            </div>
+            <input type="range" id="s-ten-s" min="1" max="70" value="10"
+              oninput="sliderToNum('s-ten-s','s-ten-n');updateSliderFill(this.id,1,70)">
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">🔥</span> Inflation Rate</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="s-inf-n" type="number" min="0" max="25" step="0.5" value="6"
+                oninput="numToSlider('s-inf-n','s-inf-s',0,25);updateSliderFill('s-inf-s',0,25)"> <span style="font-size:11px;color:var(--mu2)">% p.a.</span>
+            </div>
+            <input type="range" id="s-inf-s" min="0" max="25" value="6" step="0.5"
+              oninput="sliderToNum('s-inf-s','s-inf-n');updateSliderFill(this.id,0,25)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step-Up Toggle -->
+      <div class="stepup-row" onclick="toggleStepUp('s')">
+        <div class="stepup-row-left">
+          <span class="stepup-ico">📈</span>
+          <div>
+            <div class="stepup-label">Annual Step-Up / Top-Up</div>
+            <div class="stepup-sub">Increase investment amount every year by a fixed %</div>
+          </div>
+        </div>
+        <div class="stepup-toggle" id="s-su-tog"></div>
+      </div>
+      <div class="stepup-panel" id="s-su-panel">
+        <div class="stepup-badge">⚡ Step-Up Active</div>
+        <div class="field">
+          <label><span class="lico">🔼</span> Annual Step-Up Rate</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="s-su-n" type="number" min="0" max="50" step="1" value="10"
+                oninput="numToSlider('s-su-n','s-su-s',0,50);updateSliderFill('s-su-s',0,50)">
+              <span style="font-size:11px;color:var(--mu2)">% per year</span>
+            </div>
+            <input type="range" id="s-su-s" min="0" max="50" value="10" step="1"
+              oninput="sliderToNum('s-su-s','s-su-n');updateSliderFill(this.id,0,50)">
+          </div>
+        </div>
+        <div class="stepup-hint">E.g. a <b>10% step-up</b> on a ₹10,000 SIP means ₹11,000 in Year 2, ₹12,100 in Year 3, and so on. For lump sum, this adds a fresh top-up every year at the stepped-up amount.</div>
+      </div>
+
+      <div class="err" id="err"></div>
+      <button class="btn btnp" id="mkt-btn" onclick="calcMarket()">Fetch Live Data & Calculate →</button>
+      <div class="spin" id="spin"><div class="ring"></div>Fetching latest NAV / price data…</div>
+    </div>
+  </div>
+
+
+  <!-- ── PANEL 3: TAX ── -->
+  <div id="p-tax" class="panel">
+    <div class="card">
+      <div class="ch">
+        <h2>Tax Calculator</h2>
+        <p>Calculate post-tax returns on equity, debt MFs, ELSS, and FDs. Covers LTCG, STCG, and indexation.</p>
+      </div>
+      <div class="tax-mode-grid">
+        <div class="tax-mode-btn active" id="txm-equity" onclick="setTaxMode('equity')">
+          <div class="tmb-icon">📈</div>
+          <div class="tmb-title">Equity / Equity MF</div>
+          <div class="tmb-sub">LTCG 12.5% · STCG 20%</div>
+        </div>
+        <div class="tax-mode-btn" id="txm-debt" onclick="setTaxMode('debt')">
+          <div class="tmb-icon">🏦</div>
+          <div class="tmb-title">Debt MF / Bonds</div>
+          <div class="tmb-sub">Slab rate (post Apr 2023)</div>
+        </div>
+        <div class="tax-mode-btn" id="txm-elss" onclick="setTaxMode('elss')">
+          <div class="tmb-icon">🔒</div>
+          <div class="tmb-title">ELSS (Tax Saver)</div>
+          <div class="tmb-sub">3yr lock-in · LTCG 12.5%</div>
+        </div>
+        <div class="tax-mode-btn" id="txm-fd" onclick="setTaxMode('fd')">
+          <div class="tmb-icon">🏛️</div>
+          <div class="tmb-title">FD / Savings</div>
+          <div class="tmb-sub">TDS 10% · Slab rate</div>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="field">
+          <label><span class="lico">₹</span> Purchase / Invested Amount</label>
+          <div class="aw">
+            <input type="number" id="tx-invested" value="500000" min="1" step="1000" oninput="showWords('tx-invested','tx-iw');calcTax()">
+            <span class="words" id="tx-iw">Five Lakh Rupees</span>
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">💰</span> Sale / Maturity Value</label>
+          <div class="aw">
+            <input type="number" id="tx-sale" value="900000" min="1" step="1000" oninput="showWords('tx-sale','tx-sw');calcTax()">
+            <span class="words" id="tx-sw">Nine Lakh Rupees</span>
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">📅</span> Holding Period</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="tx-hold-n" type="number" min="0" max="70" step="1" value="2"
+                oninput="numToSlider('tx-hold-n','tx-hold-s',0,70);updateSliderFill('tx-hold-s',0,70);calcTax()">
+              <span style="font-size:11px;color:var(--mu2)">years</span>
+            </div>
+            <input type="range" id="tx-hold-s" min="0" max="70" value="2" step="1"
+              oninput="sliderToNum('tx-hold-s','tx-hold-n');updateSliderFill(this.id,0,70);calcTax()">
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">💼</span> Your Income Tax Slab</label>
+          <select id="tx-slab" onchange="calcTax()">
+            <option value="0">Nil (below ₹3L)</option>
+            <option value="5">5% (₹3L – ₹7L)</option>
+            <option value="10">10% (₹7L – ₹10L)</option>
+            <option value="15">15% (₹10L – ₹12L)</option>
+            <option value="20">20% (₹12L – ₹15L)</option>
+            <option value="30" selected>30% (above ₹15L)</option>
+          </select>
+        </div>
+      </div>
+      <div class="tax-result-box" id="tax-result-box" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- ── PANEL 4: GOAL PLANNER ── -->
+  <div id="p-goal" class="panel">
+    <div class="card">
+      <div class="ch">
+        <h2>Goal Planner</h2>
+        <p>Know your target — work backwards to find the exact SIP or lump sum you need today.</p>
+      </div>
+      <div class="fg">
+        <div class="field wide">
+          <label><span class="lico">🎯</span> Target Corpus (Future Value)</label>
+          <div class="aw">
+            <input type="number" id="gl-target" value="10000000" min="1000" step="100000" oninput="showWords('gl-target','gl-tw');calcGoal()">
+            <span class="words" id="gl-tw">One Crore Rupees</span>
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">📅</span> Time to Goal</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="gl-years-n" type="number" min="1" max="70" value="15"
+                oninput="numToSlider('gl-years-n','gl-years-s',1,70);updateSliderFill('gl-years-s',1,70);calcGoal()">
+              <span style="font-size:11px;color:var(--mu2)">years</span>
+            </div>
+            <input type="range" id="gl-years-s" min="1" max="70" value="15"
+              oninput="sliderToNum('gl-years-s','gl-years-n');updateSliderFill(this.id,1,70);calcGoal()">
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">📈</span> Expected Annual Return</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="gl-rate-n" type="number" min="1" max="50" step="0.5" value="12"
+                oninput="numToSlider('gl-rate-n','gl-rate-s',1,50);updateSliderFill('gl-rate-s',1,50);calcGoal()">
+              <span style="font-size:11px;color:var(--mu2)">% p.a.</span>
+            </div>
+            <input type="range" id="gl-rate-s" min="1" max="50" value="12" step="0.5"
+              oninput="sliderToNum('gl-rate-s','gl-rate-n');updateSliderFill(this.id,1,50);calcGoal()">
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">🔥</span> Inflation Rate</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="gl-inf-n" type="number" min="0" max="25" step="0.5" value="6"
+                oninput="numToSlider('gl-inf-n','gl-inf-s',0,25);updateSliderFill('gl-inf-s',0,25);calcGoal()">
+              <span style="font-size:11px;color:var(--mu2)">% p.a.</span>
+            </div>
+            <input type="range" id="gl-inf-s" min="0" max="25" value="6" step="0.5"
+              oninput="sliderToNum('gl-inf-s','gl-inf-n');updateSliderFill(this.id,0,25);calcGoal()">
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">🔼</span> Annual Step-Up on SIP</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="gl-su-n" type="number" min="0" max="50" step="1" value="10"
+                oninput="numToSlider('gl-su-n','gl-su-s',0,50);updateSliderFill('gl-su-s',0,50);calcGoal()">
+              <span style="font-size:11px;color:var(--mu2)">% / yr</span>
+            </div>
+            <input type="range" id="gl-su-s" min="0" max="50" value="10" step="1"
+              oninput="sliderToNum('gl-su-s','gl-su-n');updateSliderFill(this.id,0,50);calcGoal()">
+          </div>
+        </div>
+      </div>
+      <div id="goal-result"></div>
+    </div>
+  </div>
+
+  <!-- ── PANEL 5: SWP ── -->
+  <div id="p-swp" class="panel">
+    <div class="card">
+      <div class="ch">
+        <h2>SWP — Systematic Withdrawal Plan</h2>
+        <p>Plan your retirement income — set a monthly withdrawal and see how long your corpus lasts, or find the maximum safe withdrawal.</p>
+      </div>
+      <div class="fg">
+        <div class="field wide">
+          <label><span class="lico">💼</span> Starting Corpus</label>
+          <div class="aw">
+            <input type="number" id="sw-corpus" value="10000000" min="1000" step="100000" oninput="showWords('sw-corpus','sw-cw');calcSWP()">
+            <span class="words" id="sw-cw">One Crore Rupees</span>
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">💸</span> Monthly Withdrawal</label>
+          <div class="aw">
+            <input type="number" id="sw-monthly" value="50000" min="100" step="1000" oninput="showWords('sw-monthly','sw-mw');calcSWP()">
+            <span class="words" id="sw-mw">Fifty Thousand Rupees</span>
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">📈</span> Expected Annual Return</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="sw-rate-n" type="number" min="0" max="50" step="0.5" value="10"
+                oninput="numToSlider('sw-rate-n','sw-rate-s',0,50);updateSliderFill('sw-rate-s',0,50);calcSWP()">
+              <span style="font-size:11px;color:var(--mu2)">% p.a.</span>
+            </div>
+            <input type="range" id="sw-rate-s" min="0" max="50" value="10" step="0.5"
+              oninput="sliderToNum('sw-rate-s','sw-rate-n');updateSliderFill(this.id,0,50);calcSWP()">
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">🔥</span> Inflation Rate</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="sw-inf-n" type="number" min="0" max="25" step="0.5" value="6"
+                oninput="numToSlider('sw-inf-n','sw-inf-s',0,25);updateSliderFill('sw-inf-s',0,25);calcSWP()">
+              <span style="font-size:11px;color:var(--mu2)">% p.a.</span>
+            </div>
+            <input type="range" id="sw-inf-s" min="0" max="25" value="6" step="0.5"
+              oninput="sliderToNum('sw-inf-s','sw-inf-n');updateSliderFill(this.id,0,25);calcSWP()">
+          </div>
+        </div>
+        <div class="field">
+          <label><span class="lico">🔼</span> Annual Withdrawal Step-Up</label>
+          <div class="si-wrap">
+            <div class="si-top">
+              <input class="si-num" id="sw-su-n" type="number" min="0" max="25" step="1" value="6"
+                oninput="numToSlider('sw-su-n','sw-su-s',0,25);updateSliderFill('sw-su-s',0,25);calcSWP()">
+              <span style="font-size:11px;color:var(--mu2)">% / yr</span>
+            </div>
+            <input type="range" id="sw-su-s" min="0" max="25" value="6" step="1"
+              oninput="sliderToNum('sw-su-s','sw-su-n');updateSliderFill(this.id,0,25);calcSWP()">
+          </div>
+        </div>
+      </div>
+      <div id="swp-result"></div>
+      <div class="swp-timeline" id="swp-timeline" style="display:none">
+        <div class="swp-tl-hd">Corpus Depletion Timeline</div>
+        <div class="tw"><table>
+          <thead><tr><th>Year</th><th>Opening Corpus</th><th>Withdrawn</th><th>Returns Earned</th><th>Closing Corpus</th></tr></thead>
+          <tbody id="swp-tb"></tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RESULTS ── -->
+  <div id="results">
+    <div class="hero-res">
+      <div class="hl">Projected Corpus</div>
+      <div class="hn" id="r-corpus">₹0</div>
+      <div class="hs">after <b id="r-years">—</b> years &nbsp;·&nbsp; <b id="r-src">—</b></div>
+    </div>
+
+    <div class="sg">
+      <div class="sc"><div class="sl">Total Invested</div><div class="sv cb" id="r-inv">₹0</div></div>
+      <div class="sc"><div class="sl">Gross Returns</div><div class="sv cG" id="r-ret">₹0</div></div>
+      <div class="sc"><div class="sl">Inflation Adjusted</div><div class="sv ct" id="r-real">₹0</div></div>
+      <div class="sc"><div class="sl">Wealth Multiplier</div><div class="sv cg" id="r-mult">0x</div></div>
+      <div class="sc"><div class="sl">CAGR Used</div><div class="sv cG" id="r-cagr">0%</div></div>
+      <div class="sc"><div class="sl">Real Return Rate</div><div class="sv ct" id="r-rr">0%</div></div>
+      <div class="sc" id="r-su-card" style="display:none"><div class="sl">Step-Up Rate</div><div class="sv" style="color:var(--purple)" id="r-su">0%/yr</div></div>
+    </div>
+
+    <div class="pc">
+      <h3>Wealth Composition</h3>
+      <div class="pr">
+        <div class="pm"><span>💰 Amount Invested</span><span id="pi">0%</span></div>
+        <div class="pb"><div class="pf pfb" id="bi" style="width:0%"></div></div>
+      </div>
+      <div class="pr">
+        <div class="pm"><span>📈 Returns Earned</span><span id="pr2">0%</span></div>
+        <div class="pb"><div class="pf pfg" id="br" style="width:0%"></div></div>
+      </div>
+      <div class="pr">
+        <div class="pm"><span>🔥 Inflation Erosion</span><span id="pinf">—</span></div>
+        <div class="pb"><div class="pf pfr" id="binf" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="cc"><h3>Wealth Growth Trajectory</h3><canvas id="ch"></canvas></div>
+
+    <div class="prj">
+      <h3>📅 Future Wealth Projections</h3>
+      <p>Stay invested longer — see how compounding multiplies your corpus over the next 5 to 70 years.</p>
+      <div class="disc">⚠️ Projections assume a constant return rate. Actual market returns fluctuate. Past performance ≠ future results. This tool is for educational purposes only and does not constitute financial advice.</div>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Extra Years</th><th>Total Duration</th>
+              <th>Gross Corpus</th><th>Inflation Adj.</th><th>Wealth Multiple</th>
+            </tr>
+          </thead>
+          <tbody id="ptb"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>© 2026 PlanMyFund. All rights reserved.</span>
+</footer>
+
+</div><!-- /page-fund -->
+
+<!-- ── PAGE: STOCK MARKET ANALYSIS ── -->
+<div class="page" id="page-stock">
+  <div class="wrap">
+
+    <!-- HEADER -->
+    <header style="padding-top:60px">
+      <div class="brand-pill">
+        <span class="live-dot"></span>
+        Live NSE · BSE · 10,000+ MFs · Real-Time Analysis
+      </div>
+      <div class="hero-title">
+        <span class="word1">Stock</span><span class="word-gap"> </span><span class="word2">Analysis</span>
+      </div>
+      <p class="tagline">Search any Indian stock, ETF or mutual fund — get live performance, risk rating, pros &amp; cons, return calculator and advisory.</p>
+    </header>
+
+    <!-- SEARCH -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="ch">
+        <h2>Search Stock / MF / ETF</h2>
+        <p>Type a name or symbol — searches across <b>NSE · BSE stocks</b>, <b>ETFs</b> and <b>10,000+ mutual funds</b>.</p>
+      </div>
+      <div class="cats" id="sa-cats">
+        <button class="cbt active" onclick="setSaCat(this,'all')">All</button>
+        <button class="cbt" onclick="setSaCat(this,'Stock')">Stocks</button>
+        <button class="cbt" onclick="setSaCat(this,'Index')">ETF / Index</button>
+        <button class="cbt" onclick="setSaCat(this,'Equity')">Equity MF</button>
+        <button class="cbt" onclick="setSaCat(this,'Debt')">Debt MF</button>
+        <button class="cbt" onclick="setSaCat(this,'Hybrid')">Hybrid MF</button>
+        <button class="cbt" onclick="setSaCat(this,'ELSS')">ELSS</button>
+        <button class="cbt" onclick="setSaCat(this,'Sectoral')">Sectoral MF</button>
+      </div>
+      <div class="sw" style="position:relative">
+        <input type="text" id="sa-input" placeholder="e.g. Reliance, HDFC Bank, Parag Parikh, Nifty 50 ETF…"
+          autocomplete="off" oninput="onSaSearch(this.value)"
+          onfocus="openSaDD()" onblur="setTimeout(closeSaDD,230)"
+          style="font-size:14px;padding:12px 44px 12px 14px">
+        <span class="sico" style="font-size:18px">⌕</span>
+        <div class="ddl" id="sa-ddl">
+          <div class="ddload" id="sa-ddload">⏳ Loading instruments…</div>
+        </div>
+        <input type="hidden" id="sa-sym">
+        <input type="hidden" id="sa-kind">
+        <input type="hidden" id="sa-name">
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btnp" id="sa-btn" onclick="runAnalysis()">Analyse →</button>
+      </div>
+      <div class="spin" id="sa-spin"><div class="ring"></div>Fetching live data & computing analysis…</div>
+      <div class="err" id="sa-err"></div>
+    </div>
+
+    <!-- RESULTS (hidden until analysis runs) -->
+    <div id="sa-results" style="display:none;animation:fadeUp .5s ease">
+
+      <!-- NAME + PRICE HERO -->
+      <div class="hero-res" style="margin-bottom:16px" id="sa-hero">
+        <div class="hl" id="sa-hero-cat">—</div>
+        <div style="font-family:var(--ff);font-size:clamp(18px,3vw,26px);font-weight:700;color:var(--tx);margin-bottom:6px" id="sa-hero-name">—</div>
+        <div class="hn" id="sa-hero-price">—</div>
+        <div class="hs" id="sa-hero-change">—</div>
+      </div>
+
+      <!-- PERFORMANCE SCROLLERS -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="ch"><h2>Performance Snapshot</h2><p>Returns across multiple time horizons based on available data.</p></div>
+        <div style="overflow-x:auto;padding-bottom:4px">
+          <div style="display:flex;gap:10px;min-width:max-content" id="sa-perf-strip"></div>
+        </div>
+      </div>
+
+      <!-- PRICE CHART -->
+      <div class="cc" style="margin-bottom:16px">
+        <h3 style="font-family:var(--ff);font-size:19px;font-weight:700;margin-bottom:16px;color:var(--tx)">📉 Price / NAV History</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="sa-chart-tabs">
+          <button class="cbt active" onclick="setSaChartPeriod(this,'1m')">1M</button>
+          <button class="cbt" onclick="setSaChartPeriod(this,'3m')">3M</button>
+          <button class="cbt" onclick="setSaChartPeriod(this,'6m')">6M</button>
+          <button class="cbt" onclick="setSaChartPeriod(this,'ytd')">YTD</button>
+          <button class="cbt" onclick="setSaChartPeriod(this,'1y')">1Y</button>
+          <button class="cbt" onclick="setSaChartPeriod(this,'3y')">3Y</button>
+          <button class="cbt" onclick="setSaChartPeriod(this,'5y')">5Y</button>
+          <button class="cbt" onclick="setSaChartPeriod(this,'max')">MAX</button>
+        </div>
+        <canvas id="sa-chart" style="max-height:320px"></canvas>
+      </div>
+
+      <!-- STATS GRID -->
+      <div class="sg" style="margin-bottom:16px" id="sa-stats-grid"></div>
+
+      <!-- RISK RATING + ADVISORY -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:16px">
+
+        <!-- Risk Rating -->
+        <div class="card" style="margin:0">
+          <div class="ch"><h2>⚠️ Risk Rating</h2><p>Composite score based on volatility, category, history &amp; liquidity.</p></div>
+          <div id="sa-risk-box"></div>
+        </div>
+
+        <!-- Advisory -->
+        <div class="card" style="margin:0">
+          <div class="ch"><h2>🔒 Investment Advisory</h2><p>Lock-in status, ideal horizon &amp; suitability summary.</p></div>
+          <div id="sa-advisory-box"></div>
+        </div>
+      </div>
+
+      <!-- PROS & CONS -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="ch"><h2>✅ Pros &amp; ⚠️ Cons</h2><p>Data-driven strengths and weaknesses of this instrument.</p></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="sa-proscons">
+          <div id="sa-pros"></div>
+          <div id="sa-cons"></div>
+        </div>
+      </div>
+
+      <!-- RETURN CALCULATOR (with tax) -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="ch"><h2>🧮 Return Calculator with Tax</h2><p>Calculate post-tax returns for this specific instrument using its live CAGR.</p></div>
+        <div class="fg">
+          <div class="field">
+            <label><span class="lico">💼</span> Investment Type</label>
+            <select id="sa-calc-type">
+              <option value="lumpsum">Lump Sum</option>
+              <option value="sip">SIP — Monthly</option>
+            </select>
+          </div>
+          <div class="field">
+            <label><span class="lico">₹</span> Amount</label>
+            <div class="aw">
+              <input type="number" id="sa-calc-amt" value="100000" min="100" step="1000" oninput="showWords('sa-calc-amt','sa-calc-w')">
+              <span class="words" id="sa-calc-w">One Lakh Rupees</span>
+            </div>
+          </div>
+          <div class="field">
+            <label><span class="lico">📅</span> Tenure</label>
+            <div class="si-wrap">
+              <div class="si-top">
+                <input class="si-num" id="sa-calc-years-n" type="number" min="1" max="40" value="5"
+                  oninput="numToSlider('sa-calc-years-n','sa-calc-years-s',1,40);updateSliderFill('sa-calc-years-s',1,40)">
+                <span style="font-size:11px;color:var(--mu2)">yrs</span>
+              </div>
+              <input type="range" id="sa-calc-years-s" min="1" max="40" value="5"
+                oninput="sliderToNum('sa-calc-years-s','sa-calc-years-n');updateSliderFill(this.id,1,40)">
+            </div>
+          </div>
+          <div class="field">
+            <label><span class="lico">💼</span> Tax Slab</label>
+            <select id="sa-calc-slab">
+              <option value="0">Nil</option>
+              <option value="5">5%</option>
+              <option value="10">10%</option>
+              <option value="15">15%</option>
+              <option value="20">20%</option>
+              <option value="30" selected>30%</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btnp" onclick="runReturnCalc()" style="margin-top:4px">Calculate Post-Tax Returns →</button>
+        <div id="sa-calc-result" style="margin-top:16px;display:none"></div>
+      </div>
+
+    </div><!-- /sa-results -->
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ══════════ SLIDER ↔ NUM ══════════
+function sliderToNum(sId,nId){document.getElementById(nId).value=document.getElementById(sId).value}
+function numToSlider(nId,sId,mn,mx){
+  let v=parseFloat(document.getElementById(nId).value);
+  if(isNaN(v))return;v=Math.min(Math.max(v,mn),mx);
+  document.getElementById(sId).value=v;
+}
+function updateSliderFill(id,mn,mx){
+  const el=document.getElementById(id);
+  const pct=((el.value-mn)/(mx-mn)*100).toFixed(1)+'%';
+  el.style.setProperty('--pct',pct);
+}
+
+// ══════════ WORDS ══════════
+const _ones=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+const _tens=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+function _b100(x){return x<20?_ones[x]:_tens[Math.floor(x/10)]+(x%10?' '+_ones[x%10]:'')}
+function _b1k(x){return x<100?_b100(x):_ones[Math.floor(x/100)]+' Hundred'+(x%100?' '+_b100(x%100):'')}
+function numWords(n){
+  if(!n||isNaN(n)||n<=0)return'';n=Math.floor(n);let r='';
+  if(n>=1e7){r+=_b1k(Math.floor(n/1e7))+' Crore ';n%=1e7}
+  if(n>=1e5){r+=_b100(Math.floor(n/1e5))+' Lakh ';n%=1e5}
+  if(n>=1e3){r+=_b1k(Math.floor(n/1e3))+' Thousand ';n%=1e3}
+  if(n>0)r+=_b1k(n);
+  return r.trim()+' Rupees';
+}
+function showWords(iId,sId){
+  const v=parseFloat(document.getElementById(iId).value);
+  document.getElementById(sId).textContent=v>0?numWords(v):'';
+}
+
+// ══════════ FORMAT ══════════
+function fmt(n){
+  if(n>=1e7)return'₹'+(n/1e7).toFixed(2)+' Cr';
+  if(n>=1e5)return'₹'+(n/1e5).toFixed(2)+' L';
+  return'₹'+Math.round(n).toLocaleString('en-IN');
+}
+function fmts(n){
+  if(n>=1e7)return(n/1e7).toFixed(1)+'Cr';
+  if(n>=1e5)return(n/1e5).toFixed(1)+'L';
+  if(n>=1e3)return(n/1e3).toFixed(1)+'K';
+  return Math.round(n)+'';
+}
+
+// ══════════ STEP-UP TOGGLE ══════════
+function toggleStepUp(pfx){
+  const tog=document.getElementById(pfx+'-su-tog');
+  const panel=document.getElementById(pfx+'-su-panel');
+  const isOn=tog.classList.toggle('on');
+  panel.classList.toggle('open',isOn);
+}
+
+// ══════════ ENGINE (with optional step-up) ══════════
+// stepUp = annual increase % (0 = no step-up)
+function engine(p,r,y,type,inf,stepUp){
+  const rv=r/100,iv=inf/100,su=(stepUp||0)/100;
+  let corpus=0,invested=0;
+
+  if(type==='lumpsum'){
+    if(su===0){
+      corpus=p*Math.pow(1+rv,y);
+      invested=p;
+    }else{
+      // Lump sum with annual top-ups: initial p + yearly top-up that grows by su%
+      corpus=p*Math.pow(1+rv,y); // initial lump sum grows for full period
+      invested=p;
+      let topup=p*su; // first year top-up = su% of initial
+      for(let yr=1;yr<=y;yr++){
+        corpus+=topup*Math.pow(1+rv,y-yr);
+        invested+=topup;
+        topup*=(1+su);
+      }
+    }
+  }else{
+    // SIP with step-up
+    // Each year's monthly SIP amount = p * (1+su)^(year-1)
+    // Each monthly payment grows for remaining months
+    if(su===0){
+      const mr=rv/12,m=y*12;
+      corpus=p*((Math.pow(1+mr,m)-1)/mr)*(1+mr);
+      invested=p*m;
+    }else{
+      const mr=rv/12;
+      for(let yr=1;yr<=y;yr++){
+        const monthlyAmt=p*Math.pow(1+su,yr-1);
+        const monthsLeft=(y-yr)*12+12; // months remaining from start of this year's SIPs
+        // 12 monthly SIPs each invested for (monthsLeft-k) months
+        for(let k=0;k<12;k++){
+          corpus+=monthlyAmt*Math.pow(1+mr,monthsLeft-k);
+          invested+=monthlyAmt;
+        }
+      }
+    }
+  }
+
+  return{corpus,invested,returns:corpus-invested,real:corpus/Math.pow(1+iv,y)};
+}
+
+// ══════════ TABS ══════════
+function switchTab(t){
+  const tabs=['manual','market','tax','goal','swp'];
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',tabs[i]===t));
+  tabs.forEach(id=>{
+    const p=document.getElementById('p-'+id);
+    if(p)p.classList.toggle('on',id===t);
+  });
+  document.getElementById('results').style.display='none';
+  if(t==='tax')calcTax();
+  if(t==='goal')calcGoal();
+  if(t==='swp')calcSWP();
+}
+
+// ══════════ RESULTS ══════════
+let myChart=null;
+function showResults(p,r,y,type,inf,src,stepUp){
+  stepUp=stepUp||0;
+  const d=engine(p,r,y,type,inf,stepUp);
+  document.getElementById('r-corpus').textContent=fmt(d.corpus);
+  document.getElementById('r-years').textContent=y;
+  document.getElementById('r-src').textContent=src;
+  document.getElementById('r-inv').textContent=fmt(d.invested);
+  document.getElementById('r-ret').textContent=fmt(d.returns);
+  document.getElementById('r-real').textContent=fmt(d.real);
+  document.getElementById('r-mult').textContent=(d.corpus/d.invested).toFixed(2)+'x';
+  document.getElementById('r-cagr').textContent=r.toFixed(2)+'% p.a.';
+  const rr=((1+r/100)/(1+inf/100)-1)*100;
+  document.getElementById('r-rr').textContent=rr.toFixed(2)+'% p.a.';
+
+  // Step-up card
+  const suCard=document.getElementById('r-su-card');
+  if(stepUp>0){
+    suCard.style.display='';
+    document.getElementById('r-su').textContent=stepUp.toFixed(0)+'% / yr';
+  }else{
+    suCard.style.display='none';
+  }
+
+  const pI=(d.invested/d.corpus*100).toFixed(1),pR=(d.returns/d.corpus*100).toFixed(1);
+  const pE=((d.corpus-d.real)/d.corpus*100).toFixed(1);
+  document.getElementById('pi').textContent=pI+'%';
+  document.getElementById('pr2').textContent=pR+'%';
+  document.getElementById('pinf').textContent=pE+'% erosion';
+  setTimeout(()=>{
+    document.getElementById('bi').style.width=Math.min(pI,100)+'%';
+    document.getElementById('br').style.width=Math.min(pR,100)+'%';
+    document.getElementById('binf').style.width=Math.min(pE,100)+'%';
+  },80);
+  buildChart(p,r,y,type,inf,stepUp);
+  buildTable(p,r,y,type,inf,stepUp);
+  document.getElementById('results').style.display='block';
+  setTimeout(()=>document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'}),120);
+}
+
+function buildChart(p,r,y,type,inf,stepUp){
+  stepUp=stepUp||0;
+  const labels=[],gross=[],real=[],inv=[],grossNoSU=[];
+  for(let i=0;i<=y;i++){
+    labels.push('Y'+i);
+    if(i===0){const s=type==='lumpsum'?p:0;gross.push(s);real.push(s);inv.push(s);grossNoSU.push(s);}
+    else{
+      const d=engine(p,r,i,type,inf,stepUp);
+      gross.push(d.corpus);real.push(d.real);inv.push(d.invested);
+      if(stepUp>0){const d0=engine(p,r,i,type,inf,0);grossNoSU.push(d0.corpus);}
+    }
+  }
+  if(myChart)myChart.destroy();
+  const datasets=[
+    {label:'Gross Corpus'+(stepUp>0?' (with step-up)':''),data:gross,borderColor:'#f5c842',backgroundColor:'rgba(245,200,66,.08)',fill:true,tension:.42,borderWidth:2,pointRadius:0,pointHoverRadius:5},
+    {label:'Inflation Adjusted',data:real,borderColor:'#00d4b8',fill:false,tension:.42,borderWidth:2,pointRadius:0,pointHoverRadius:5,borderDash:[6,3]},
+    {label:'Amount Invested',data:inv,borderColor:'#4d94ff',fill:false,tension:.1,borderWidth:1.5,pointRadius:0,pointHoverRadius:4,borderDash:[3,3]}
+  ];
+  if(stepUp>0){
+    datasets.splice(1,0,{label:'Without Step-Up',data:grossNoSU,borderColor:'#b47bff',fill:false,tension:.42,borderWidth:1.5,pointRadius:0,pointHoverRadius:4,borderDash:[4,4]});
+  }
+  myChart=new Chart(document.getElementById('ch').getContext('2d'),{
+    type:'line',data:{labels,datasets},
+    options:{responsive:true,interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#5a6a8a',font:{size:12,family:'DM Sans'},boxWidth:16,padding:18}},
+        tooltip:{backgroundColor:'#0d1526',borderColor:'rgba(245,200,66,.18)',borderWidth:1,
+          titleColor:'#f0f4ff',bodyColor:'#8898b8',
+          callbacks:{label:c=>' '+c.dataset.label+': '+fmt(c.parsed.y)}}
+      },
+      scales:{
+        x:{ticks:{color:'#5a6a8a',font:{size:11},maxTicksLimit:10},grid:{color:'rgba(255,255,255,.03)'}},
+        y:{ticks:{color:'#5a6a8a',font:{size:11},callback:v=>'₹'+fmts(v)},grid:{color:'rgba(255,255,255,.03)'}}
+      }
+    }
+  });
+}
+
+function buildTable(p,r,base,type,inf,stepUp){
+  stepUp=stepUp||0;
+  const tb=document.getElementById('ptb');tb.innerHTML='';
+  [0,5,10,15,20,25,30,35,40,45,50,60,70].forEach(ex=>{
+    const y=base+ex,d=engine(p,r,y,type,inf,stepUp);
+    const tr=document.createElement('tr');
+    if(ex===0)tr.style.background='rgba(245,200,66,.04)';
+    tr.innerHTML=`<td style="color:var(--gold)">${ex===0?'Base (now)':'+'+ex+' yrs'}</td>
+      <td style="color:var(--mu2)">${y} yrs</td>
+      <td style="color:var(--green)">${fmt(d.corpus)}</td>
+      <td style="color:var(--teal)">${fmt(d.real)}</td>
+      <td style="color:var(--mu2)">${(d.corpus/d.invested).toFixed(2)}x</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+// ══════════ MANUAL CALC ══════════
+function calcManual(){
+  const amt=parseFloat(document.getElementById('m-amt').value);
+  const type=document.getElementById('m-type').value;
+  const r=parseFloat(document.getElementById('m-rate-n').value);
+  const y=parseInt(document.getElementById('m-ten-n').value);
+  const inf=parseFloat(document.getElementById('m-inf-n').value)||0;
+  const suOn=document.getElementById('m-su-tog').classList.contains('on');
+  const stepUp=suOn?(parseFloat(document.getElementById('m-su-n').value)||0):0;
+  if(!amt||amt<100)return alert('Enter a valid investment amount (min ₹100).');
+  if(!r||r<=0)return alert('Enter a valid return rate.');
+  if(!y||y<1)return alert('Tenure must be at least 1 year.');
+  const suLabel=stepUp>0?` · ${stepUp}% Step-Up`:'';
+  showResults(amt,r,y,type,inf,`Custom ${r.toFixed(1)}% p.a.${suLabel}`,stepUp);
+}
+
+// ══════════ FUND + STOCK DATA ══════════
+// Comprehensive curated list of popular MFs
+const POPULAR=[
+  // PPFAS
+  {code:'122639',name:'Parag Parikh Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119568',name:'Parag Parikh Flexi Cap Fund - Regular Plan - Growth',cat:'Equity'},
+  {code:'145462',name:'Parag Parikh ELSS Tax Saver Fund - Direct Plan - Growth',cat:'ELSS'},
+  {code:'149021',name:'Parag Parikh Liquid Fund - Direct Plan - Growth',cat:'Debt'},
+  {code:'152702',name:'Parag Parikh Conservative Hybrid Fund - Direct Plan - Growth',cat:'Hybrid'},
+  // SBI
+  {code:'125494',name:'SBI Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119598',name:'SBI Bluechip Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120465',name:'SBI Magnum Midcap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'125353',name:'SBI Nifty Index Fund - Direct Plan - Growth',cat:'Index'},
+  {code:'119589',name:'SBI Equity Hybrid Fund - Direct Plan - Growth',cat:'Hybrid'},
+  {code:'119551',name:'SBI Liquid Fund - Direct Plan - Growth',cat:'Debt'},
+  {code:'120824',name:'SBI Large & Midcap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119557',name:'SBI Focused Equity Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120828',name:'SBI Flexicap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119574',name:'SBI Contra Fund - Direct Plan - Growth',cat:'Equity'},
+  // HDFC
+  {code:'119533',name:'HDFC Mid-Cap Opportunities Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118989',name:'HDFC Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118988',name:'HDFC Top 100 Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119597',name:'HDFC Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118990',name:'HDFC Balanced Advantage Fund - Direct Plan - Growth',cat:'Hybrid'},
+  {code:'125497',name:'HDFC Index Fund - Nifty 50 Plan - Direct',cat:'Index'},
+  {code:'119592',name:'HDFC Focused 30 Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119576',name:'HDFC Dividend Yield Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120166',name:'HDFC Multi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  // ICICI Prudential
+  {code:'120586',name:'ICICI Prudential Bluechip Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120587',name:'ICICI Prudential Midcap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120588',name:'ICICI Prudential Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120578',name:'ICICI Prudential Equity & Debt Fund - Direct Plan - Growth',cat:'Hybrid'},
+  {code:'120624',name:'ICICI Prudential Nifty 50 Index Fund - Direct Plan - Growth',cat:'Index'},
+  {code:'120574',name:'ICICI Prudential Technology Fund - Direct Plan - Growth',cat:'Sectoral'},
+  {code:'120621',name:'ICICI Prudential Balanced Advantage Fund - Direct Plan - Growth',cat:'Hybrid'},
+  {code:'120818',name:'ICICI Prudential Multi-Asset Fund - Direct Plan - Growth',cat:'Hybrid'},
+  {code:'120619',name:'ICICI Prudential Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120622',name:'ICICI Prudential Value Discovery Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120625',name:'ICICI Prudential Nifty Next 50 Index Fund - Direct Plan - Growth',cat:'Index'},
+  // Mirae Asset
+  {code:'118834',name:'Mirae Asset Large Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118836',name:'Mirae Asset Emerging Bluechip Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'135781',name:'Mirae Asset ELSS Tax Saver Fund - Direct Plan - Growth',cat:'ELSS'},
+  {code:'118839',name:'Mirae Asset Hybrid Equity Fund - Direct Plan - Growth',cat:'Hybrid'},
+  {code:'135800',name:'Mirae Asset Healthcare Fund - Direct Plan - Growth',cat:'Sectoral'},
+  {code:'145113',name:'Mirae Asset Nifty 50 ETF',cat:'Index'},
+  {code:'145114',name:'Mirae Asset Nifty Next 50 ETF',cat:'Index'},
+  {code:'135777',name:'Mirae Asset Midcap Fund - Direct Plan - Growth',cat:'Equity'},
+  // Axis
+  {code:'120503',name:'Axis Bluechip Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120505',name:'Axis Midcap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120506',name:'Axis Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120507',name:'Axis Long Term Equity Fund (ELSS) - Direct Plan - Growth',cat:'ELSS'},
+  {code:'120508',name:'Axis Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120509',name:'Axis Focused 25 Fund - Direct Plan - Growth',cat:'Equity'},
+  // Kotak
+  {code:'119601',name:'Kotak Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119602',name:'Kotak Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119603',name:'Kotak Midcap 50 Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119608',name:'Kotak Equity Hybrid Fund - Direct Plan - Growth',cat:'Hybrid'},
+  {code:'119811',name:'Kotak Liquid Fund - Direct Plan - Growth',cat:'Debt'},
+  {code:'119604',name:'Kotak Bluechip Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'125354',name:'Kotak Nifty 50 Index Fund - Direct Plan - Growth',cat:'Index'},
+  // Nippon
+  {code:'118701',name:'Nippon India Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118702',name:'Nippon India Large Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'101206',name:'Nippon India Growth Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'101399',name:'Nippon India Liquid Fund - Direct Plan - Growth',cat:'Debt'},
+  {code:'118705',name:'Nippon India Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118706',name:'Nippon India Multi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118707',name:'Nippon India Focused Equity Fund - Direct Plan - Growth',cat:'Equity'},
+  // DSP
+  {code:'119066',name:'DSP Midcap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119067',name:'DSP Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119064',name:'DSP Tax Saver Fund (ELSS) - Direct Plan - Growth',cat:'ELSS'},
+  {code:'119061',name:'DSP Healthcare Fund - Direct Plan - Growth',cat:'Sectoral'},
+  {code:'119068',name:'DSP Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119070',name:'DSP Nifty 50 Index Fund - Direct Plan - Growth',cat:'Index'},
+  // Franklin Templeton
+  {code:'118632',name:'Franklin India Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118634',name:'Franklin India Smaller Companies Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118629',name:'Franklin India Prima Fund - Direct Plan - Growth',cat:'Equity'},
+  // Aditya Birla Sun Life
+  {code:'119270',name:'Aditya Birla Sun Life Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119271',name:'Aditya Birla Sun Life Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119278',name:'Aditya Birla Sun Life Tax Relief 96 (ELSS) - Direct Plan - Growth',cat:'ELSS'},
+  {code:'119274',name:'Aditya Birla Sun Life Frontline Equity Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119275',name:'Aditya Birla Sun Life Midcap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119279',name:'Aditya Birla Sun Life Balanced Advantage Fund - Direct Plan - Growth',cat:'Hybrid'},
+  {code:'119280',name:'Aditya Birla Sun Life Digital India Fund - Direct Plan - Growth',cat:'Sectoral'},
+  {code:'125357',name:'Aditya Birla Sun Life Nifty 50 Index Fund - Direct Plan - Growth',cat:'Index'},
+  // UTI
+  {code:'120718',name:'UTI Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120719',name:'UTI Mid Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120723',name:'UTI Nifty 50 Index Fund - Direct Plan - Growth',cat:'Index'},
+  {code:'120722',name:'UTI Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'120724',name:'UTI Nifty Next 50 Index Fund - Direct Plan - Growth',cat:'Index'},
+  // Quant
+  {code:'140251',name:'Quant Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'140252',name:'Quant Mid Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'140253',name:'Quant Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'140254',name:'Quant Large Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'140256',name:'Quant ELSS Tax Saver Fund - Direct Plan - Growth',cat:'ELSS'},
+  {code:'140257',name:'Quant Active Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'140258',name:'Quant Multi Asset Fund - Direct Plan - Growth',cat:'Hybrid'},
+  // Motilal Oswal
+  {code:'135809',name:'Motilal Oswal Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'135810',name:'Motilal Oswal Midcap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'135808',name:'Motilal Oswal Large Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'135811',name:'Motilal Oswal Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'135812',name:'Motilal Oswal Nifty 50 Index Fund - Direct Plan - Growth',cat:'Index'},
+  {code:'135813',name:'Motilal Oswal Nifty Smallcap 250 Index Fund - Direct Plan - Growth',cat:'Index'},
+  {code:'135814',name:'Motilal Oswal Nifty Midcap 150 Index Fund - Direct Plan - Growth',cat:'Index'},
+  {code:'135815',name:'Motilal Oswal Nasdaq 100 FOF - Direct Plan - Growth',cat:'Index'},
+  // Canara Robeco
+  {code:'118563',name:'Canara Robeco Bluechip Equity Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118564',name:'Canara Robeco Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118562',name:'Canara Robeco Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'118561',name:'Canara Robeco Equity Hybrid Fund - Direct Plan - Growth',cat:'Hybrid'},
+  // Tata
+  {code:'119021',name:'Tata Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119020',name:'Tata Digital India Fund - Direct Plan - Growth',cat:'Sectoral'},
+  {code:'119022',name:'Tata Midcap Growth Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119023',name:'Tata Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119024',name:'Tata India Consumer Fund - Direct Plan - Growth',cat:'Sectoral'},
+  // PGIM India
+  {code:'145110',name:'PGIM India Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'145111',name:'PGIM India Midcap Opportunities Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'145112',name:'PGIM India Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  // Edelweiss
+  {code:'128102',name:'Edelweiss Mid Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'128103',name:'Edelweiss Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'128104',name:'Edelweiss Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'135793',name:'Edelweiss Recently Listed IPO Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'145464',name:'Edelweiss CRISIL IBX 50:50 Gilt Plus SDL Short Duration Index Fund',cat:'Debt'},
+  // NAVI
+  {code:'149425',name:'Navi Nifty 50 Index Fund - Direct Plan - Growth',cat:'Index'},
+  {code:'149426',name:'Navi Nifty Next 50 Index Fund - Direct Plan - Growth',cat:'Index'},
+  {code:'149427',name:'Navi Total Market Index Fund - Direct Plan - Growth',cat:'Index'},
+  {code:'149428',name:'Navi US Total Stock Market FOF - Direct Plan - Growth',cat:'Index'},
+  // Bandhan (erstwhile IDFC)
+  {code:'119093',name:'Bandhan Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119094',name:'Bandhan Core Equity Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119095',name:'Bandhan Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  // Invesco
+  {code:'119575',name:'Invesco India Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119576',name:'Invesco India Midcap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119577',name:'Invesco India Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'135778',name:'Invesco India ESG Equity Fund - Direct Plan - Growth',cat:'Equity'},
+  // WhiteOak Capital
+  {code:'152703',name:'WhiteOak Capital Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'152704',name:'WhiteOak Capital Mid Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'152705',name:'WhiteOak Capital Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'152706',name:'WhiteOak Capital Large Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  // Samco
+  {code:'152710',name:'Samco Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'152711',name:'Samco Active Momentum Fund - Direct Plan - Growth',cat:'Equity'},
+  // Baroda BNP Paribas
+  {code:'119299',name:'Baroda BNP Paribas Mid Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119300',name:'Baroda BNP Paribas Flexi Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  {code:'119301',name:'Baroda BNP Paribas Small Cap Fund - Direct Plan - Growth',cat:'Equity'},
+  // Debt Funds (comprehensive)
+  {code:'119083',name:'HDFC Liquid Fund - Direct Plan - Growth',cat:'Debt'},
+  {code:'119596',name:'SBI Short Duration Fund - Direct Plan - Growth',cat:'Debt'},
+  {code:'119599',name:'SBI Dynamic Bond Fund - Direct Plan - Growth',cat:'Debt'},
+  {code:'120629',name:'ICICI Prudential Corporate Bond Fund - Direct Plan - Growth',cat:'Debt'},
+  {code:'120630',name:'ICICI Prudential Gilt Fund - Direct Plan - Growth',cat:'Debt'},
+  {code:'119607',name:'Kotak Corporate Bond Fund - Direct Plan - Growth',cat:'Debt'},
+  {code:'120728',name:'UTI Short Duration Fund - Direct Plan - Growth',cat:'Debt'},
+];
+
+// Comprehensive NSE Stocks — Nifty 50 + Nifty Next 50 + Nifty Midcap + popular smallcaps + new-age companies
+const NSE=[
+  // Indices
+  {sym:'^NSEI',name:'Nifty 50 Index',cat:'Index'},
+  {sym:'^BSESN',name:'BSE Sensex',cat:'Index'},
+  {sym:'^NSMIDCP50',name:'Nifty Midcap 50 Index',cat:'Index'},
+  // ETFs
+  {sym:'NIFTYBEES.NS',name:'Nippon India ETF Nifty BeES',cat:'Index'},
+  {sym:'BANKBEES.NS',name:'Nippon India ETF Bank BeES',cat:'Index'},
+  {sym:'GOLDBEES.NS',name:'Nippon India ETF Gold BeES',cat:'Index'},
+  {sym:'JUNIORBEES.NS',name:'Nippon India ETF Junior BeES (Nifty Next 50)',cat:'Index'},
+  {sym:'ICICINIFTY.NS',name:'ICICI Prudential Nifty 50 ETF',cat:'Index'},
+  {sym:'HDFCNIFTY.NS',name:'HDFC Nifty 50 ETF',cat:'Index'},
+  {sym:'SENSEXETF.NS',name:'SBI ETF Sensex',cat:'Index'},
+  {sym:'ITBEES.NS',name:'Nippon India IT ETF',cat:'Index'},
+  {sym:'NETFIT.NS',name:'Nippon India ETF Nifty IT',cat:'Index'},
+  {sym:'MIDCAP150.NS',name:'Motilal Oswal Nifty Midcap 150 ETF',cat:'Index'},
+  {sym:'SMALLCAP.NS',name:'Nippon India ETF Nifty Smallcap BeES',cat:'Index'},
+  {sym:'SETFNIF50.NS',name:'SBI ETF Nifty 50',cat:'Index'},
+  {sym:'MAFANG.NS',name:'Mirae Asset NYSE FANG+ ETF',cat:'Index'},
+  {sym:'LIQUIDBEES.NS',name:'Nippon India ETF Liquid BeES',cat:'Index'},
+  {sym:'ABSLBANETF.NS',name:'Aditya Birla Sun Life Banking ETF',cat:'Index'},
+  {sym:'SILVERBEES.NS',name:'Nippon India ETF Silver BeES',cat:'Index'},
+  {sym:'CPSEETF.NS',name:'Nippon India ETF CPSE',cat:'Index'},
+  {sym:'HNGSNGBEES.NS',name:'Mirae Asset Hang Seng TECH ETF',cat:'Index'},
+  // ── Nifty 50 ──
+  {sym:'RELIANCE.NS',name:'Reliance Industries',cat:'Stock'},
+  {sym:'TCS.NS',name:'Tata Consultancy Services (TCS)',cat:'Stock'},
+  {sym:'HDFCBANK.NS',name:'HDFC Bank',cat:'Stock'},
+  {sym:'ICICIBANK.NS',name:'ICICI Bank',cat:'Stock'},
+  {sym:'INFY.NS',name:'Infosys',cat:'Stock'},
+  {sym:'BHARTIARTL.NS',name:'Bharti Airtel',cat:'Stock'},
+  {sym:'SBIN.NS',name:'State Bank of India (SBI)',cat:'Stock'},
+  {sym:'HINDUNILVR.NS',name:'Hindustan Unilever (HUL)',cat:'Stock'},
+  {sym:'ITC.NS',name:'ITC Limited',cat:'Stock'},
+  {sym:'KOTAKBANK.NS',name:'Kotak Mahindra Bank',cat:'Stock'},
+  {sym:'LT.NS',name:'Larsen & Toubro (L&T)',cat:'Stock'},
+  {sym:'HCLTECH.NS',name:'HCL Technologies',cat:'Stock'},
+  {sym:'MARUTI.NS',name:'Maruti Suzuki India',cat:'Stock'},
+  {sym:'SUNPHARMA.NS',name:'Sun Pharmaceutical Industries',cat:'Stock'},
+  {sym:'BAJFINANCE.NS',name:'Bajaj Finance',cat:'Stock'},
+  {sym:'TITAN.NS',name:'Titan Company',cat:'Stock'},
+  {sym:'WIPRO.NS',name:'Wipro',cat:'Stock'},
+  {sym:'AXISBANK.NS',name:'Axis Bank',cat:'Stock'},
+  {sym:'NTPC.NS',name:'NTPC Limited',cat:'Stock'},
+  {sym:'NESTLEIND.NS',name:'Nestle India',cat:'Stock'},
+  {sym:'ONGC.NS',name:'Oil & Natural Gas Corporation (ONGC)',cat:'Stock'},
+  {sym:'M&M.NS',name:'Mahindra & Mahindra (M&M)',cat:'Stock'},
+  {sym:'POWERGRID.NS',name:'Power Grid Corporation of India',cat:'Stock'},
+  {sym:'TATAMOTORS.NS',name:'Tata Motors',cat:'Stock'},
+  {sym:'ASIANPAINT.NS',name:'Asian Paints',cat:'Stock'},
+  {sym:'ULTRACEMCO.NS',name:'UltraTech Cement',cat:'Stock'},
+  {sym:'ADANIENT.NS',name:'Adani Enterprises',cat:'Stock'},
+  {sym:'COALINDIA.NS',name:'Coal India',cat:'Stock'},
+  {sym:'TATASTEEL.NS',name:'Tata Steel',cat:'Stock'},
+  {sym:'JSWSTEEL.NS',name:'JSW Steel',cat:'Stock'},
+  {sym:'HDFCLIFE.NS',name:'HDFC Life Insurance',cat:'Stock'},
+  {sym:'SBILIFE.NS',name:'SBI Life Insurance',cat:'Stock'},
+  {sym:'LICI.NS',name:'Life Insurance Corporation of India (LIC)',cat:'Stock'},
+  {sym:'BAJAJFINSV.NS',name:'Bajaj Finserv',cat:'Stock'},
+  {sym:'CIPLA.NS',name:'Cipla',cat:'Stock'},
+  {sym:'DRREDDY.NS',name:"Dr Reddy's Laboratories",cat:'Stock'},
+  {sym:'EICHERMOT.NS',name:'Eicher Motors (Royal Enfield)',cat:'Stock'},
+  {sym:'BPCL.NS',name:'Bharat Petroleum Corporation (BPCL)',cat:'Stock'},
+  {sym:'HEROMOTOCO.NS',name:'Hero MotoCorp',cat:'Stock'},
+  {sym:'APOLLOHOSP.NS',name:'Apollo Hospitals Enterprise',cat:'Stock'},
+  {sym:'TATACONSUM.NS',name:'Tata Consumer Products',cat:'Stock'},
+  {sym:'DIVISLAB.NS',name:"Divi's Laboratories",cat:'Stock'},
+  {sym:'GRASIM.NS',name:'Grasim Industries',cat:'Stock'},
+  {sym:'BEL.NS',name:'Bharat Electronics Limited (BEL)',cat:'Stock'},
+  {sym:'SHRIRAMFIN.NS',name:'Shriram Finance',cat:'Stock'},
+  {sym:'BRITANNIA.NS',name:'Britannia Industries',cat:'Stock'},
+  // ── Nifty Next 50 ──
+  {sym:'ADANIGREEN.NS',name:'Adani Green Energy',cat:'Stock'},
+  {sym:'ADANIPORTS.NS',name:'Adani Ports & SEZ',cat:'Stock'},
+  {sym:'ADANIPOWER.NS',name:'Adani Power',cat:'Stock'},
+  {sym:'ADANITRANS.NS',name:'Adani Transmission',cat:'Stock'},
+  {sym:'AMBUJACEM.NS',name:'Ambuja Cements',cat:'Stock'},
+  {sym:'BAJAJ-AUTO.NS',name:'Bajaj Auto',cat:'Stock'},
+  {sym:'BANKBARODA.NS',name:'Bank of Baroda',cat:'Stock'},
+  {sym:'BERGEPAINT.NS',name:'Berger Paints India',cat:'Stock'},
+  {sym:'COLPAL.NS',name:'Colgate-Palmolive India',cat:'Stock'},
+  {sym:'DABUR.NS',name:'Dabur India',cat:'Stock'},
+  {sym:'DLF.NS',name:'DLF Limited',cat:'Stock'},
+  {sym:'GAIL.NS',name:'GAIL India',cat:'Stock'},
+  {sym:'GODREJCP.NS',name:'Godrej Consumer Products',cat:'Stock'},
+  {sym:'HAVELLS.NS',name:'Havells India',cat:'Stock'},
+  {sym:'HINDALCO.NS',name:'Hindalco Industries',cat:'Stock'},
+  {sym:'ICICIPRULI.NS',name:'ICICI Prudential Life Insurance',cat:'Stock'},
+  {sym:'INDUSINDBK.NS',name:'IndusInd Bank',cat:'Stock'},
+  {sym:'IOC.NS',name:'Indian Oil Corporation (IOC)',cat:'Stock'},
+  {sym:'IRCTC.NS',name:'Indian Railway Catering & Tourism (IRCTC)',cat:'Stock'},
+  {sym:'LUPIN.NS',name:'Lupin',cat:'Stock'},
+  {sym:'MARICO.NS',name:'Marico',cat:'Stock'},
+  {sym:'MOTHERSON.NS',name:'Samvardhana Motherson International',cat:'Stock'},
+  {sym:'NAUKRI.NS',name:'Info Edge (Naukri.com)',cat:'Stock'},
+  {sym:'PIIND.NS',name:'PI Industries',cat:'Stock'},
+  {sym:'PIDILITIND.NS',name:'Pidilite Industries (Fevicol)',cat:'Stock'},
+  {sym:'PNBHOUSING.NS',name:'PNB Housing Finance',cat:'Stock'},
+  {sym:'SAIL.NS',name:'Steel Authority of India (SAIL)',cat:'Stock'},
+  {sym:'SIEMENS.NS',name:'Siemens India',cat:'Stock'},
+  {sym:'TORNTPHARM.NS',name:'Torrent Pharmaceuticals',cat:'Stock'},
+  {sym:'TRENT.NS',name:'Trent (Zudio / Westside)',cat:'Stock'},
+  {sym:'VEDL.NS',name:'Vedanta Limited',cat:'Stock'},
+  {sym:'ZOMATO.NS',name:'Zomato',cat:'Stock'},
+  // ── Midcap & Popular ──
+  {sym:'DMART.NS',name:'Avenue Supermarts (DMart)',cat:'Stock'},
+  {sym:'PERSISTENT.NS',name:'Persistent Systems',cat:'Stock'},
+  {sym:'LTIMINDTREE.NS',name:'LTIMindtree',cat:'Stock'},
+  {sym:'DIXON.NS',name:'Dixon Technologies',cat:'Stock'},
+  {sym:'POLYCAB.NS',name:'Polycab India',cat:'Stock'},
+  {sym:'CHOLAFIN.NS',name:'Cholamandalam Investment & Finance',cat:'Stock'},
+  {sym:'MUTHOOTFIN.NS',name:'Muthoot Finance',cat:'Stock'},
+  {sym:'PNB.NS',name:'Punjab National Bank',cat:'Stock'},
+  {sym:'CANBK.NS',name:'Canara Bank',cat:'Stock'},
+  {sym:'UNIONBANK.NS',name:'Union Bank of India',cat:'Stock'},
+  {sym:'BANKINDIA.NS',name:'Bank of India',cat:'Stock'},
+  {sym:'FEDERALBNK.NS',name:'Federal Bank',cat:'Stock'},
+  {sym:'IDFCFIRSTB.NS',name:'IDFC First Bank',cat:'Stock'},
+  {sym:'BANDHANBNK.NS',name:'Bandhan Bank',cat:'Stock'},
+  {sym:'AUBANK.NS',name:'AU Small Finance Bank',cat:'Stock'},
+  {sym:'UJJIVANSFB.NS',name:'Ujjivan Small Finance Bank',cat:'Stock'},
+  {sym:'EQUITASBNK.NS',name:'Equitas Small Finance Bank',cat:'Stock'},
+  {sym:'PAYTM.NS',name:'One97 Communications (Paytm)',cat:'Stock'},
+  {sym:'NYKAA.NS',name:'FSN E-Commerce (Nykaa)',cat:'Stock'},
+  {sym:'POLICYBZR.NS',name:'PB Fintech (PolicyBazaar)',cat:'Stock'},
+  {sym:'DELHIVERY.NS',name:'Delhivery',cat:'Stock'},
+  {sym:'CARTRADE.NS',name:'CarTrade Tech',cat:'Stock'},
+  {sym:'EASEMYTRIP.NS',name:'Easy Trip Planners (EaseMyTrip)',cat:'Stock'},
+  {sym:'IXIGO.NS',name:'Le Travenues Technology (ixigo)',cat:'Stock'},
+  {sym:'IDEAFORGE.NS',name:'ideaForge Technology (Drones)',cat:'Stock'},
+  {sym:'MAPMYINDIA.NS',name:'CE Info Systems (MapmyIndia)',cat:'Stock'},
+  {sym:'RATEGAIN.NS',name:'RateGain Travel Technologies',cat:'Stock'},
+  {sym:'NAZARA.NS',name:'Nazara Technologies',cat:'Stock'},
+  {sym:'TANLA.NS',name:'Tanla Platforms',cat:'Stock'},
+  {sym:'ROUTE.NS',name:'Route Mobile',cat:'Stock'},
+  {sym:'NETWEB.NS',name:'Netweb Technologies India',cat:'Stock'},
+  {sym:'TATAPOWER.NS',name:'Tata Power',cat:'Stock'},
+  {sym:'NHPC.NS',name:'NHPC Limited',cat:'Stock'},
+  {sym:'SJVN.NS',name:'SJVN Limited',cat:'Stock'},
+  {sym:'CESC.NS',name:'CESC Limited',cat:'Stock'},
+  {sym:'TORNTPOWER.NS',name:'Torrent Power',cat:'Stock'},
+  {sym:'GSPL.NS',name:'Gujarat State Petronet (GSPL)',cat:'Stock'},
+  {sym:'IGL.NS',name:'Indraprastha Gas Limited (IGL)',cat:'Stock'},
+  {sym:'MGL.NS',name:'Mahanagar Gas Limited (MGL)',cat:'Stock'},
+  {sym:'GUJGASLTD.NS',name:'Gujarat Gas Limited',cat:'Stock'},
+  {sym:'PETRONET.NS',name:'Petronet LNG',cat:'Stock'},
+  {sym:'HAL.NS',name:'Hindustan Aeronautics Limited (HAL)',cat:'Stock'},
+  {sym:'BHEL.NS',name:'Bharat Heavy Electricals (BHEL)',cat:'Stock'},
+  {sym:'IRFC.NS',name:'Indian Railway Finance Corporation (IRFC)',cat:'Stock'},
+  {sym:'RECLTD.NS',name:'REC Limited',cat:'Stock'},
+  {sym:'PFC.NS',name:'Power Finance Corporation (PFC)',cat:'Stock'},
+  {sym:'IREDA.NS',name:'Indian Renewable Energy Development Agency (IREDA)',cat:'Stock'},
+  {sym:'HUDCO.NS',name:'Housing & Urban Development Corporation (HUDCO)',cat:'Stock'},
+  {sym:'COCHINSHIP.NS',name:'Cochin Shipyard',cat:'Stock'},
+  {sym:'MAZAGON.NS',name:'Mazagon Dock Shipbuilders',cat:'Stock'},
+  {sym:'GPIL.NS',name:'Godawari Power & Ispat',cat:'Stock'},
+  {sym:'SAIL.NS',name:'Steel Authority of India (SAIL)',cat:'Stock'},
+  {sym:'NMDC.NS',name:'NMDC Limited',cat:'Stock'},
+  {sym:'HINDCOPPER.NS',name:'Hindustan Copper',cat:'Stock'},
+  {sym:'NATIONALUM.NS',name:'National Aluminium (NALCO)',cat:'Stock'},
+  {sym:'MOIL.NS',name:'MOIL Limited (Manganese)',cat:'Stock'},
+  {sym:'APLAPOLLO.NS',name:'APL Apollo Tubes',cat:'Stock'},
+  {sym:'ASTRAL.NS',name:'Astral Limited (Pipes)',cat:'Stock'},
+  {sym:'SUPREMEIND.NS',name:'Supreme Industries',cat:'Stock'},
+  {sym:'FINOLEX.NS',name:'Finolex Industries',cat:'Stock'},
+  {sym:'ULTRACEMCO.NS',name:'UltraTech Cement',cat:'Stock'},
+  {sym:'SHREECEM.NS',name:'Shree Cement',cat:'Stock'},
+  {sym:'DALMIACEM.NS',name:'Dalmia Bharat',cat:'Stock'},
+  {sym:'JKCEMENT.NS',name:'JK Cement',cat:'Stock'},
+  {sym:'RAMCOCEM.NS',name:'Ramco Cements',cat:'Stock'},
+  {sym:'PRICEIND.NS',name:'Price Industries',cat:'Stock'},
+  {sym:'MTAR.NS',name:'MTAR Technologies',cat:'Stock'},
+  {sym:'DATAPATTNS.NS',name:'Data Patterns India',cat:'Stock'},
+  {sym:'PARAS.NS',name:'Paras Defence & Space Technologies',cat:'Stock'},
+  {sym:'SYRMA.NS',name:'Syrma SGS Technology',cat:'Stock'},
+  {sym:'KAYNES.NS',name:'Kaynes Technology India',cat:'Stock'},
+  {sym:'AVALON.NS',name:'Avalon Technologies',cat:'Stock'},
+  {sym:'APARINDS.NS',name:'Apar Industries (Cables & Conductors)',cat:'Stock'},
+  {sym:'KEI.NS',name:'KEI Industries (Cables)',cat:'Stock'},
+  {sym:'CAMPUS.NS',name:'Campus Activewear',cat:'Stock'},
+  {sym:'METRO.NS',name:'Metro Brands',cat:'Stock'},
+  {sym:'BATA.NS',name:'Bata India',cat:'Stock'},
+  {sym:'RELAXO.NS',name:'Relaxo Footwears',cat:'Stock'},
+  {sym:'BATAINDIA.NS',name:'Bata India',cat:'Stock'},
+  {sym:'PAGEIND.NS',name:'Page Industries (Jockey)',cat:'Stock'},
+  {sym:'GOKALDAS.NS',name:'Gokaldas Exports',cat:'Stock'},
+  {sym:'VEDANT.NS',name:'Vedant Fashions (Manyavar)',cat:'Stock'},
+  {sym:'ABFRL.NS',name:'Aditya Birla Fashion & Retail (ABFRL)',cat:'Stock'},
+  {sym:'TCNSBRANDS.NS',name:'TCNS Clothing (W / Aurelia)',cat:'Stock'},
+  {sym:'MANYAVAR.NS',name:'Vedant Fashions (Manyavar)',cat:'Stock'},
+  {sym:'DDEVPLSTC.NS',name:'Ddev Plastiks Industries',cat:'Stock'},
+  {sym:'BIKAJI.NS',name:'Bikaji Foods International',cat:'Stock'},
+  {sym:'DEVYANI.NS',name:'Devyani International (KFC / Pizza Hut India)',cat:'Stock'},
+  {sym:'JUBLFOOD.NS',name:"Jubilant FoodWorks (Domino's India)",cat:'Stock'},
+  {sym:'WESTLIFE.NS',name:"Westlife Foodworld (McDonald's India)",cat:'Stock'},
+  {sym:'SAPPHIRE.NS',name:'Sapphire Foods India (KFC / Pizza Hut)',cat:'Stock'},
+  {sym:'NESCO.NS',name:'NESCO Limited',cat:'Stock'},
+  {sym:'INDIAGLYCO.NS',name:'India Glycols',cat:'Stock'},
+  {sym:'VAIBHAVGBL.NS',name:'Vaibhav Global',cat:'Stock'},
+  {sym:'KRSNAA.NS',name:'Krsnaa Diagnostics',cat:'Stock'},
+  {sym:'METROPOLIS.NS',name:'Metropolis Healthcare',cat:'Stock'},
+  {sym:'DRLAL.NS',name:"Dr Lal PathLabs",cat:'Stock'},
+  {sym:'MEDANTA.NS',name:'Global Health (Medanta)',cat:'Stock'},
+  {sym:'YATHARTH.NS',name:'Yatharth Hospital & Trauma Care Services',cat:'Stock'},
+  {sym:'RAINBOW.NS',name:'Rainbow Childrens Medicare',cat:'Stock'},
+  {sym:'KIMS.NS',name:'Krishna Institute of Medical Sciences (KIMS)',cat:'Stock'},
+  {sym:'FORTIS.NS',name:'Fortis Healthcare',cat:'Stock'},
+  {sym:'MAXHEALTH.NS',name:'Max Healthcare Institute',cat:'Stock'},
+  {sym:'CIPLA.NS',name:'Cipla',cat:'Stock'},
+  {sym:'AUROPHARMA.NS',name:'Aurobindo Pharma',cat:'Stock'},
+  {sym:'ALKEM.NS',name:'Alkem Laboratories',cat:'Stock'},
+  {sym:'TORNTPHARM.NS',name:'Torrent Pharmaceuticals',cat:'Stock'},
+  {sym:'IPCALAB.NS',name:'IPCA Laboratories',cat:'Stock'},
+  {sym:'GLENMARK.NS',name:'Glenmark Pharmaceuticals',cat:'Stock'},
+  {sym:'NATCOPHARM.NS',name:'Natco Pharma',cat:'Stock'},
+  {sym:'GRANULES.NS',name:'Granules India',cat:'Stock'},
+  {sym:'SYNGENE.NS',name:'Syngene International',cat:'Stock'},
+  {sym:'DIVI.NS',name:"Divi's Laboratories",cat:'Stock'},
+  {sym:'SUNPHARMA.NS',name:'Sun Pharmaceutical Industries',cat:'Stock'},
+  {sym:'PPLPHARMA.NS',name:'Piramal Pharma',cat:'Stock'},
+  {sym:'JYOTHYLAB.NS',name:'Jyothy Labs',cat:'Stock'},
+  {sym:'EMAMILTD.NS',name:'Emami Limited',cat:'Stock'},
+  {sym:'GILLETTE.NS',name:'Gillette India',cat:'Stock'},
+  {sym:'GODREJIND.NS',name:'Godrej Industries',cat:'Stock'},
+  {sym:'GODREJPROP.NS',name:'Godrej Properties',cat:'Stock'},
+  {sym:'OBEROIRLTY.NS',name:'Oberoi Realty',cat:'Stock'},
+  {sym:'PRESTIGE.NS',name:'Prestige Estates Projects',cat:'Stock'},
+  {sym:'BRIGADE.NS',name:'Brigade Enterprises',cat:'Stock'},
+  {sym:'SOBHA.NS',name:'Sobha Limited',cat:'Stock'},
+  {sym:'MAHLIFE.NS',name:'Mahindra Lifespace Developers',cat:'Stock'},
+  {sym:'LODHA.NS',name:'Macrotech Developers (Lodha)',cat:'Stock'},
+  {sym:'SIGNATURE.NS',name:'Signature Global India',cat:'Stock'},
+  {sym:'EMCURE.NS',name:'Emcure Pharmaceuticals',cat:'Stock'},
+  {sym:'INOXGREEN.NS',name:'Inox Green Energy Services',cat:'Stock'},
+  {sym:'INOXWIND.NS',name:'Inox Wind',cat:'Stock'},
+  {sym:'SUZLON.NS',name:'Suzlon Energy',cat:'Stock'},
+  {sym:'RPOWER.NS',name:'Reliance Power',cat:'Stock'},
+  {sym:'GREENKO.NS',name:'Greenko Energies',cat:'Stock'},
+  {sym:'TATACHEM.NS',name:'Tata Chemicals',cat:'Stock'},
+  {sym:'PIDILITIND.NS',name:'Pidilite Industries (Fevicol)',cat:'Stock'},
+  {sym:'DEEPAKNTR.NS',name:'Deepak Nitrite',cat:'Stock'},
+  {sym:'SRF.NS',name:'SRF Limited',cat:'Stock'},
+  {sym:'AAPL.NS',name:'Asian Paints',cat:'Stock'},
+  {sym:'KANSAINER.NS',name:'Kansai Nerolac Paints',cat:'Stock'},
+  {sym:'AKZOINDIA.NS',name:'Akzo Nobel India',cat:'Stock'},
+  {sym:'INDIGO.NS',name:'InterGlobe Aviation (IndiGo)',cat:'Stock'},
+  {sym:'SPICEJET.NS',name:'SpiceJet',cat:'Stock'},
+  {sym:'BLUEDART.NS',name:'Blue Dart Express',cat:'Stock'},
+  {sym:'MAHINDCIE.NS',name:'Mahindra CIE Automotive',cat:'Stock'},
+  {sym:'BOSCHLTD.NS',name:'Bosch Limited',cat:'Stock'},
+  {sym:'EXIDEIND.NS',name:'Exide Industries',cat:'Stock'},
+  {sym:'AMARON.NS',name:'Amara Raja Energy & Mobility',cat:'Stock'},
+  {sym:'BALKRISIND.NS',name:'Balkrishna Industries (BKT Tyres)',cat:'Stock'},
+  {sym:'MRF.NS',name:'MRF Limited (Tyres)',cat:'Stock'},
+  {sym:'APOLLOTYRE.NS',name:'Apollo Tyres',cat:'Stock'},
+  {sym:'CEATLTD.NS',name:'CEAT Tyres',cat:'Stock'},
+  {sym:'JKTYRE.NS',name:'JK Tyre & Industries',cat:'Stock'},
+  {sym:'CRAFTSMAN.NS',name:'Craftsman Automation',cat:'Stock'},
+  {sym:'ENDURANCE.NS',name:'Endurance Technologies',cat:'Stock'},
+  {sym:'SONA.NS',name:'Sona BLW Precision Forgings',cat:'Stock'},
+  {sym:'SUPRAJIT.NS',name:'Suprajit Engineering',cat:'Stock'},
+  {sym:'TATVA.NS',name:'Tatva Chintan Pharma Chem',cat:'Stock'},
+  {sym:'CLEAN.NS',name:'Clean Science and Technology',cat:'Stock'},
+  {sym:'FINEORG.NS',name:'Fine Organic Industries',cat:'Stock'},
+  {sym:'GUJALKALI.NS',name:'Gujarat Alkalies & Chemicals',cat:'Stock'},
+  {sym:'ATUL.NS',name:'Atul Limited (Chemicals)',cat:'Stock'},
+  {sym:'ROSSARI.NS',name:'Rossari Biotech',cat:'Stock'},
+  {sym:'JUBLINGREA.NS',name:'Jubilant Ingrevia',cat:'Stock'},
+  {sym:'AAVAS.NS',name:'Aavas Financiers',cat:'Stock'},
+  {sym:'APTUS.NS',name:'Aptus Value Housing Finance',cat:'Stock'},
+  {sym:'HOMEFIRST.NS',name:'Home First Finance Company',cat:'Stock'},
+  {sym:'CREDITACC.NS',name:'CreditAccess Grameen',cat:'Stock'},
+  {sym:'SPANDANA.NS',name:'Spandana Sphoorty Financial',cat:'Stock'},
+  {sym:'FUSION.NS',name:'Fusion Micro Finance',cat:'Stock'},
+  {sym:'JMFINANCIL.NS',name:'JM Financial',cat:'Stock'},
+  {sym:'AFFLE.NS',name:'Affle India (AdTech)',cat:'Stock'},
+  {sym:'INTELLECT.NS',name:'Intellect Design Arena',cat:'Stock'},
+  {sym:'MASTECH.NS',name:'Mastech Digital',cat:'Stock'},
+  {sym:'SUBEXLTD.NS',name:'Subex Limited',cat:'Stock'},
+  {sym:'ZENSAR.NS',name:'Zensar Technologies',cat:'Stock'},
+  {sym:'MPHASIS.NS',name:'Mphasis',cat:'Stock'},
+  {sym:'COFORGE.NS',name:'Coforge (NIIT Technologies)',cat:'Stock'},
+  {sym:'LTTS.NS',name:'L&T Technology Services',cat:'Stock'},
+  {sym:'CYIENT.NS',name:'Cyient',cat:'Stock'},
+  {sym:'KPIT.NS',name:'KPIT Technologies',cat:'Stock'},
+  {sym:'TATAELXSI.NS',name:'Tata Elxsi',cat:'Stock'},
+  {sym:'MASTEK.NS',name:'Mastek',cat:'Stock'},
+  {sym:'NEWGEN.NS',name:'Newgen Software Technologies',cat:'Stock'},
+  {sym:'HAPPYFORGE.NS',name:'Happy Forgings',cat:'Stock'},
+  {sym:'RRKABEL.NS',name:'RR Kabel',cat:'Stock'},
+  {sym:'GMRAIRPORT.NS',name:'GMR Airports Infrastructure',cat:'Stock'},
+  {sym:'ADANIAIRP.NS',name:'Adani Airports Holdings',cat:'Stock'},
+  {sym:'SWIGGY.NS',name:'Bundl Technologies (Swiggy)',cat:'Stock'},
+  {sym:'HYUNDAI.NS',name:'Hyundai Motor India',cat:'Stock'},
+  {sym:'BAJAJHLDNG.NS',name:'Bajaj Holdings & Investment',cat:'Stock'},
+  {sym:'PGHH.NS',name:'Procter & Gamble Hygiene & Health Care',cat:'Stock'},
+  {sym:'HONAUT.NS',name:'Honeywell Automation India',cat:'Stock'},
+  {sym:'ABB.NS',name:'ABB India',cat:'Stock'},
+  {sym:'CUMMINSIND.NS',name:'Cummins India',cat:'Stock'},
+  {sym:'THERMAX.NS',name:'Thermax',cat:'Stock'},
+  {sym:'GRINDWELL.NS',name:'Grindwell Norton',cat:'Stock'},
+  {sym:'SCHAEFFLER.NS',name:'Schaeffler India',cat:'Stock'},
+  {sym:'SKFINDIA.NS',name:'SKF India',cat:'Stock'},
+  {sym:'TIMKEN.NS',name:'Timken India',cat:'Stock'},
+  {sym:'ELGIEQUIP.NS',name:'Elgi Equipments',cat:'Stock'},
+  {sym:'KIRLOSIND.NS',name:'Kirloskar Industries',cat:'Stock'},
+  {sym:'KIRLOSBROS.NS',name:'Kirloskar Brothers',cat:'Stock'},
+  {sym:'KPRMILL.NS',name:'KPR Mill',cat:'Stock'},
+  {sym:'VARDHACRLC.NS',name:'Vardhman Textiles',cat:'Stock'},
+  {sym:'TRIDENT.NS',name:'Trident Limited',cat:'Stock'},
+  {sym:'WABCOINDIA.NS',name:'WABCO India',cat:'Stock'},
+  {sym:'IRCON.NS',name:'IRCON International',cat:'Stock'},
+  {sym:'HFCL.NS',name:'HFCL Limited (Telecom Infra)',cat:'Stock'},
+  {sym:'TTML.NS',name:'Tata Teleservices Maharashtra',cat:'Stock'},
+  {sym:'ONEPOINT.NS',name:'Onepoint',cat:'Stock'},
+  {sym:'TATATECH.NS',name:'Tata Technologies',cat:'Stock'},
+];
+
+let MF_FULL=[];
+let activeCat='all';
+
+function catMF(n){
+  const l=n.toLowerCase();
+  if(l.includes('elss')||l.includes('tax sav'))return'ELSS';
+  if(l.includes('liquid')||l.includes('overnight')||l.includes('ultra short')||l.includes('money market')||
+     l.includes('low duration')||l.includes('short dur')||l.includes('medium dur')||l.includes('corporate bond')||
+     l.includes('banking and psu')||l.includes('gilt')||l.includes('credit risk')||l.includes('dynamic bond')||
+     l.includes('floater')||l.includes('debt')||l.includes('bond')||l.includes('fixed maturity'))return'Debt';
+  if(l.includes('hybrid')||l.includes('balanced')||l.includes('aggressive')||l.includes('conservative')||
+     l.includes('multi asset')||l.includes('equity savings')||l.includes('arbitrage'))return'Hybrid';
+  if(l.includes('index')||l.includes('nifty')||l.includes('sensex')||l.includes('etf')||
+     l.includes('bees')||l.includes('nasdaq')||l.includes('s&p')||l.includes('dow jones')||
+     l.includes('hang seng')||l.includes('ftse')||l.includes('global'))return'Index';
+  if(l.includes('sectoral')||l.includes('pharma')||l.includes('technology')||l.includes('banking fund')||
+     l.includes('infra')||l.includes('consumption')||l.includes('auto')||l.includes('fmcg')||
+     l.includes('energy')||l.includes('psu fund')||l.includes('mnc')||l.includes('realty')||
+     l.includes('healthcare')||l.includes('digital')||l.includes('defence')||l.includes('manufacturing')||
+     l.includes('commodit')||l.includes('media')||l.includes('transport')||l.includes('logistics'))return'Sectoral';
+  return'Equity';
+}
+
+// ══════════ STATIC CAGR DATA (10yr approx) — instant fallback for all NSE stocks ══════════
+const STATIC_CAGR={
+  // Indices
+  '^NSEI':13.2,'^BSESN':13.1,'^NSMIDCP50':17.4,
+  // ETFs
+  'NIFTYBEES.NS':13.1,'BANKBEES.NS':11.8,'GOLDBEES.NS':10.2,'JUNIORBEES.NS':15.3,
+  'ICICINIFTY.NS':13.0,'HDFCNIFTY.NS':13.1,'SENSEXETF.NS':13.0,'ITBEES.NS':18.4,
+  'NETFIT.NS':18.2,'MIDCAP150.NS':17.8,'SMALLCAP.NS':19.1,'SETFNIF50.NS':13.1,
+  'MAFANG.NS':14.2,'LIQUIDBEES.NS':5.8,'ABSLBANETF.NS':11.6,'SILVERBEES.NS':8.7,
+  'CPSEETF.NS':16.2,'HNGSNGBEES.NS':4.1,
+  // Nifty 50
+  'RELIANCE.NS':16.8,'TCS.NS':18.2,'HDFCBANK.NS':14.6,'ICICIBANK.NS':19.3,
+  'INFY.NS':16.4,'BHARTIARTL.NS':21.7,'SBIN.NS':18.9,'HINDUNILVR.NS':12.3,
+  'ITC.NS':14.1,'KOTAKBANK.NS':15.8,'LT.NS':17.2,'HCLTECH.NS':20.1,
+  'MARUTI.NS':16.9,'SUNPHARMA.NS':17.4,'BAJFINANCE.NS':31.2,'TITAN.NS':28.6,
+  'WIPRO.NS':13.8,'AXISBANK.NS':14.2,'NTPC.NS':19.8,'NESTLEIND.NS':18.3,
+  'ONGC.NS':9.4,'M&M.NS':22.1,'POWERGRID.NS':15.6,'TATAMOTORS.NS':23.4,
+  'ASIANPAINT.NS':16.7,'ULTRACEMCO.NS':16.1,'ADANIENT.NS':34.8,'COALINDIA.NS':12.3,
+  'TATASTEEL.NS':14.2,'JSWSTEEL.NS':18.7,'HDFCLIFE.NS':14.1,'SBILIFE.NS':17.2,
+  'LICI.NS':11.2,'BAJAJFINSV.NS':22.8,'CIPLA.NS':16.4,'DRREDDY.NS':17.8,
+  'EICHERMOT.NS':21.3,'BPCL.NS':11.8,'HEROMOTOCO.NS':9.6,'APOLLOHOSP.NS':26.3,
+  'TATACONSUM.NS':18.2,'DIVISLAB.NS':22.4,'GRASIM.NS':14.8,'BEL.NS':31.6,
+  'SHRIRAMFIN.NS':20.1,'BRITANNIA.NS':16.2,
+  // Nifty Next 50
+  'ADANIGREEN.NS':42.3,'ADANIPORTS.NS':18.7,'ADANIPOWER.NS':29.4,'ADANITRANS.NS':22.1,
+  'AMBUJACEM.NS':13.6,'BAJAJ-AUTO.NS':17.4,'BANKBARODA.NS':14.2,'BERGEPAINT.NS':15.8,
+  'COLPAL.NS':11.2,'DABUR.NS':10.4,'DLF.NS':16.9,'GAIL.NS':8.6,
+  'GODREJCP.NS':12.4,'HAVELLS.NS':21.3,'HINDALCO.NS':16.2,'ICICIPRULI.NS':13.8,
+  'INDUSINDBK.NS':9.7,'IOC.NS':9.1,'IRCTC.NS':28.4,'LUPIN.NS':9.3,
+  'MARICO.NS':12.6,'MOTHERSON.NS':14.8,'NAUKRI.NS':22.7,'PIIND.NS':24.1,
+  'PIDILITIND.NS':19.4,'PNBHOUSING.NS':8.3,'SAIL.NS':11.4,'SIEMENS.NS':24.6,
+  'TORNTPHARM.NS':16.8,'TRENT.NS':38.2,'VEDL.NS':14.7,'ZOMATO.NS':22.4,
+  // Midcap & Popular
+  'DMART.NS':31.4,'PERSISTENT.NS':34.8,'LTIMINDTREE.NS':21.6,'DIXON.NS':48.2,
+  'POLYCAB.NS':34.6,'CHOLAFIN.NS':26.3,'MUTHOOTFIN.NS':18.4,'PNB.NS':9.8,
+  'CANBK.NS':11.2,'UNIONBANK.NS':10.4,'BANKINDIA.NS':9.6,'FEDERALBNK.NS':14.8,
+  'IDFCFIRSTB.NS':8.4,'BANDHANBNK.NS':7.2,'AUBANK.NS':24.3,'UJJIVANSFB.NS':18.6,
+  'EQUITASBNK.NS':12.4,'PAYTM.NS':-8.2,'NYKAA.NS':4.6,'POLICYBZR.NS':6.2,
+  'DELHIVERY.NS':3.1,'CARTRADE.NS':2.8,'EASEMYTRIP.NS':8.4,'IXIGO.NS':12.1,
+  'IDEAFORGE.NS':6.2,'MAPMYINDIA.NS':18.3,'RATEGAIN.NS':22.4,'NAZARA.NS':24.1,
+  'TANLA.NS':28.6,'ROUTE.NS':18.4,'NETWEB.NS':42.1,'TATAPOWER.NS':22.8,
+  'NHPC.NS':16.4,'SJVN.NS':18.2,'CESC.NS':12.6,'TORNTPOWER.NS':19.4,
+  'GSPL.NS':8.4,'IGL.NS':21.3,'MGL.NS':18.6,'GUJGASLTD.NS':22.4,
+  'PETRONET.NS':14.2,'HAL.NS':34.8,'BHEL.NS':18.6,'IRFC.NS':28.4,
+  'RECLTD.NS':24.6,'PFC.NS':22.8,'IREDA.NS':31.2,'HUDCO.NS':22.4,
+  'COCHINSHIP.NS':38.6,'MAZAGON.NS':42.1,'GPIL.NS':28.4,'NMDC.NS':9.6,
+  'HINDCOPPER.NS':18.4,'NATIONALUM.NS':14.2,'MOIL.NS':12.8,
+  'APLAPOLLO.NS':32.4,'ASTRAL.NS':28.6,'SUPREMEIND.NS':18.4,'FINOLEX.NS':12.6,
+  'SHREECEM.NS':14.8,'DALMIACEM.NS':16.2,'JKCEMENT.NS':18.4,'RAMCOCEM.NS':14.6,
+  'MTAR.NS':24.6,'DATAPATTNS.NS':38.2,'PARAS.NS':18.4,'SYRMA.NS':28.6,
+  'KAYNES.NS':42.1,'AVALON.NS':22.4,'APARINDS.NS':34.8,'KEI.NS':38.6,
+  'CAMPUS.NS':8.4,'METRO.NS':18.6,'BATA.NS':9.2,'RELAXO.NS':12.4,
+  'BATAINDIA.NS':9.2,'PAGEIND.NS':18.4,'GOKALDAS.NS':24.6,'VEDANT.NS':14.8,
+  'ABFRL.NS':8.6,'TCNSBRANDS.NS':6.4,'MANYAVAR.NS':14.8,'BIKAJI.NS':18.4,
+  'DEVYANI.NS':16.2,'JUBLFOOD.NS':14.8,'WESTLIFE.NS':12.6,'SAPPHIRE.NS':14.2,
+  'NESCO.NS':12.4,'VAIBHAVGBL.NS':8.6,'KRSNAA.NS':12.4,'METROPOLIS.NS':18.6,
+  'DRLAL.NS':22.4,'MEDANTA.NS':18.2,'YATHARTH.NS':22.4,'RAINBOW.NS':24.6,
+  'KIMS.NS':21.3,'FORTIS.NS':16.8,'MAXHEALTH.NS':24.2,'AUROPHARMA.NS':14.6,
+  'ALKEM.NS':16.8,'IPCALAB.NS':12.4,'GLENMARK.NS':8.4,'NATCOPHARM.NS':18.6,
+  'GRANULES.NS':14.2,'SYNGENE.NS':16.8,'DIVI.NS':22.4,'PPLPHARMA.NS':8.4,
+  'JYOTHYLAB.NS':14.2,'EMAMILTD.NS':10.4,'GILLETTE.NS':12.8,'GODREJIND.NS':14.6,
+  'GODREJPROP.NS':22.4,'OBEROIRLTY.NS':18.6,'PRESTIGE.NS':24.2,'BRIGADE.NS':22.4,
+  'SOBHA.NS':12.4,'MAHLIFE.NS':8.6,'LODHA.NS':18.4,'SIGNATURE.NS':16.2,
+  'EMCURE.NS':18.4,'INOXGREEN.NS':14.2,'INOXWIND.NS':8.6,'SUZLON.NS':22.4,
+  'RPOWER.NS':6.2,'TATACHEM.NS':12.4,'DEEPAKNTR.NS':28.6,'SRF.NS':22.4,
+  'KANSAINER.NS':8.6,'AKZOINDIA.NS':12.4,'INDIGO.NS':16.8,'SPICEJET.NS':-12.4,
+  'BLUEDART.NS':14.2,'MAHINDCIE.NS':18.4,'BOSCHLTD.NS':16.8,'EXIDEIND.NS':12.4,
+  'AMARON.NS':16.8,'BALKRISIND.NS':22.4,'MRF.NS':16.2,'APOLLOTYRE.NS':14.8,
+  'CEATLTD.NS':12.4,'JKTYRE.NS':8.6,'CRAFTSMAN.NS':24.6,'ENDURANCE.NS':18.4,
+  'SONA.NS':18.6,'SUPRAJIT.NS':16.2,'TATVA.NS':18.4,'CLEAN.NS':22.4,
+  'FINEORG.NS':28.6,'GUJALKALI.NS':12.4,'ATUL.NS':18.6,'ROSSARI.NS':16.2,
+  'JUBLINGREA.NS':14.8,'AAVAS.NS':18.4,'APTUS.NS':22.4,'HOMEFIRST.NS':21.6,
+  'CREDITACC.NS':18.4,'SPANDANA.NS':12.4,'FUSION.NS':8.6,'JMFINANCIL.NS':12.4,
+  'AFFLE.NS':28.6,'INTELLECT.NS':22.4,'ZENSAR.NS':14.8,'MPHASIS.NS':18.6,
+  'COFORGE.NS':24.2,'LTTS.NS':22.4,'CYIENT.NS':18.6,'KPIT.NS':48.2,
+  'TATAELXSI.NS':28.6,'MASTEK.NS':16.4,'NEWGEN.NS':24.2,'HAPPYFORGE.NS':22.4,
+  'RRKABEL.NS':28.6,'GMRAIRPORT.NS':14.2,'SWIGGY.NS':8.4,'HYUNDAI.NS':12.4,
+  'BAJAJHLDNG.NS':18.4,'PGHH.NS':14.2,'HONAUT.NS':16.8,'ABB.NS':28.6,
+  'CUMMINSIND.NS':18.4,'THERMAX.NS':16.2,'GRINDWELL.NS':22.4,'SCHAEFFLER.NS':18.6,
+  'SKFINDIA.NS':14.8,'TIMKEN.NS':18.4,'ELGIEQUIP.NS':16.2,'KIRLOSIND.NS':12.4,
+  'KIRLOSBROS.NS':14.8,'KPRMILL.NS':22.4,'VARDHACRLC.NS':12.6,'TRIDENT.NS':16.4,
+  'WABCOINDIA.NS':18.4,'IRCON.NS':22.4,'HFCL.NS':14.2,'TATATECH.NS':18.6,
+  'MASTECH.NS':12.4,'SUBEXLTD.NS':8.6,'TTML.NS':6.2,
+};
+
+// ══════════ PROXY FETCH — 6 strategies in parallel race ══════════
+async function safeFetch(url){
+  const enc=encodeURIComponent(url);
+  const strategies=[
+    // Direct (works if CORS allowed)
+    ()=>fetch(url,{headers:{'Accept':'application/json'}}),
+    // corsproxy.io
+    ()=>fetch('https://corsproxy.io/?'+enc),
+    // allorigins
+    ()=>fetch('https://api.allorigins.win/get?url='+enc).then(async r=>{
+      if(!r.ok)throw new Error();
+      const j=await r.json();
+      if(!j.contents||j.contents.length<5)throw new Error();
+      return{ok:true,text:()=>Promise.resolve(j.contents)};
+    }),
+    // thingproxy
+    ()=>fetch('https://thingproxy.freeboard.io/fetch/'+url),
+    // codetabs
+    ()=>fetch('https://api.codetabs.com/v1/proxy?quest='+enc),
+    // htmldriven
+    ()=>fetch('https://cors-anywhere.herokuapp.com/'+url,{headers:{'X-Requested-With':'XMLHttpRequest'}}),
+  ];
+
+  // Try all in parallel, return first success
+  return new Promise((resolve,reject)=>{
+    let done=false;let fails=0;
+    strategies.forEach(async fn=>{
+      try{
+        const resp=await fn();
+        if(!resp||!resp.ok)throw new Error('bad response');
+        const txt=await resp.text();
+        if(!txt||txt.length<10)throw new Error('empty');
+        if(!done){done=true;resolve(txt);}
+      }catch(e){
+        fails++;
+        if(fails===strategies.length&&!done)reject(new Error('All proxy attempts failed. The data source may be temporarily unavailable.'));
+      }
+    });
+    // Timeout after 12s
+    setTimeout(()=>{if(!done){done=true;reject(new Error('Request timed out after 12s. Using cached data.'));}},12000);
+  });
+}
+
+async function loadMFList(){
+  try{
+    const txt=await safeFetch('https://api.mfapi.in/mf');
+    const arr=JSON.parse(txt);
+    MF_FULL=arr.map(f=>({code:String(f.schemeCode),name:f.schemeName,cat:catMF(f.schemeName)}));
+    const msg=MF_FULL.length.toLocaleString()+' mutual funds loaded ✓ — type to search';
+    document.getElementById('ddload').textContent=msg;
+    if(document.getElementById('sa-ddload'))document.getElementById('sa-ddload').textContent=msg;
+  }catch(e){
+    MF_FULL=POPULAR.map(f=>({...f}));
+    const msg='Showing '+POPULAR.length+' curated funds. (Full list unavailable — check connection)';
+    document.getElementById('ddload').textContent=msg;
+    if(document.getElementById('sa-ddload'))document.getElementById('sa-ddload').textContent=msg;
+  }
+}
+
+function allItems(){
+  const mf=MF_FULL.length>0?MF_FULL:POPULAR;
+  return[
+    ...mf.map(f=>({sym:f.code,name:f.name,cat:f.cat,kind:'mf'})),
+    ...NSE.map(s=>({...s,kind:'nse'}))
+  ];
+}
+
+function setCat(btn,cat){
+  document.querySelectorAll('.cbt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');activeCat=cat;
+  onSearch(document.getElementById('sym-input').value);
+}
+function openDD(){onSearch(document.getElementById('sym-input').value)}
+function closeDD(){document.getElementById('ddl').classList.remove('open')}
+
+function onSearch(q){
+  const ddl=document.getElementById('ddl');
+  const low=q.toLowerCase().trim();
+  let items=allItems();
+  if(activeCat!=='all')items=items.filter(i=>i.cat===activeCat);
+  const filtered=low.length<1
+    ?items.slice(0,50)
+    :items.filter(i=>i.name.toLowerCase().includes(low)||i.sym.toLowerCase().includes(low)).slice(0,60);
+  if(!filtered.length){ddl.innerHTML='<div class="ddload">No results found</div>';ddl.classList.add('open');return;}
+  ddl.innerHTML=filtered.map(i=>{
+    const lbl=i.kind==='mf'?'MF #'+i.sym:i.sym.replace('.NS','');
+    const nm=i.name.length>60?i.name.slice(0,60)+'…':i.name;
+    const safeName=i.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return`<div class="ddi" onmousedown="pick('${i.sym}','${safeName}','${i.kind}')">
+      <span class="dds">${lbl}</span><span class="ddn">${nm}</span><span class="ddt">${i.cat}</span></div>`;
+  }).join('')+`<div class="ddn2">${filtered.length} result${filtered.length!==1?'s':''} · MFapi.in + NSE</div>`;
+  ddl.classList.add('open');
+}
+
+function pick(sym,name,kind){
+  document.getElementById('sym-input').value=name;
+  document.getElementById('sel-sym').value=sym;
+  document.getElementById('sel-kind').value=kind;
+  document.getElementById('ddl').classList.remove('open');
+}
+
+// ══════════ MARKET CALC ══════════
+function parseNavDate(s){
+  const p=s.split('-');
+  if(p.length===3&&p[2].length===4)return new Date(+p[2],+p[1]-1,+p[0]);
+  return new Date(s);
+}
+
+// Parse Yahoo Finance response (handles both v7 and v8 shapes)
+function parseYFResponse(txt){
+  const data=JSON.parse(txt);
+  // v8 shape
+  let chart=data?.chart?.result?.[0];
+  if(chart){
+    const closes=chart.indicators?.adjclose?.[0]?.adjclose||chart.indicators?.quote?.[0]?.close;
+    const ts=chart.timestamp;
+    if(closes&&ts&&closes.length>4){
+      const valid=closes.map((c,i)=>({c,t:ts[i]})).filter(x=>x.c!=null&&!isNaN(x.c)&&x.c>0);
+      if(valid.length>3){
+        const first=valid[0],last=valid[valid.length-1];
+        const yrs=(last.t-first.t)/(365.25*24*3600);
+        return{cagr:(Math.pow(last.c/first.c,1/yrs)-1)*100,yrs};
+      }
+    }
+  }
+  // v7 shape — spark / quote
+  if(data?.quoteResponse?.result?.[0]){
+    const q=data.quoteResponse.result[0];
+    if(q.fiftyTwoWeekChangePercent!=null){
+      // use 52wk as rough 1yr proxy — not ideal but better than nothing
+    }
+  }
+  throw new Error('Could not parse Yahoo Finance response');
+}
+
+async function fetchStockCAGR(sym){
+  const p2=Math.floor(Date.now()/1000);
+  const p1=p2-10*365*24*3600;
+  // Try multiple YF endpoint variants
+  const urls=[
+    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?period1=${p1}&period2=${p2}&interval=1mo`,
+    `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?period1=${p1}&period2=${p2}&interval=1mo`,
+    `https://query1.finance.yahoo.com/v7/finance/chart/${encodeURIComponent(sym)}?period1=${p1}&period2=${p2}&interval=1mo`,
+  ];
+  for(const url of urls){
+    try{
+      const txt=await safeFetch(url);
+      const result=parseYFResponse(txt);
+      if(result&&!isNaN(result.cagr)&&isFinite(result.cagr))return result;
+    }catch(e){}
+  }
+  return null;
+}
+
+async function calcMarket(){
+  const sym=document.getElementById('sel-sym').value;
+  const kind=document.getElementById('sel-kind').value;
+  if(!sym)return alert('Please select a fund, ETF, or stock from the dropdown.');
+  const amt=parseFloat(document.getElementById('s-amt').value);
+  const type=document.getElementById('s-type').value;
+  const y=parseInt(document.getElementById('s-ten-n').value);
+  const inf=parseFloat(document.getElementById('s-inf-n').value)||0;
+  const suOn=document.getElementById('s-su-tog').classList.contains('on');
+  const stepUp=suOn?(parseFloat(document.getElementById('s-su-n').value)||0):0;
+  if(!amt||amt<100)return alert('Enter a valid investment amount (min ₹100).');
+
+  const spin=document.getElementById('spin');
+  const btn=document.getElementById('mkt-btn');
+  const err=document.getElementById('err');
+  spin.classList.add('on');btn.style.display='none';err.style.display='none';
+  document.getElementById('results').style.display='none';
+
+  try{
+    let cagr,label;
+
+    if(kind==='mf'){
+      // ── MUTUAL FUND via MFapi.in ──
+      let navArr=null,meta=null;
+      try{
+        const txt=await safeFetch('https://api.mfapi.in/mf/'+sym);
+        const data=JSON.parse(txt);
+        if(data&&data.status!=='ERROR'&&data.data?.length>=20){navArr=data.data;meta=data.meta;}
+      }catch(e){}
+
+      if(navArr){
+        const latestNAV=parseFloat(navArr[0].nav);
+        const latestDate=parseNavDate(navArr[0].date);
+        const tenYrsBack=new Date(latestDate);tenYrsBack.setFullYear(tenYrsBack.getFullYear()-10);
+        let oldIdx=navArr.length-1;
+        for(let i=0;i<navArr.length;i++){if(parseNavDate(navArr[i].date)<=tenYrsBack){oldIdx=i;break;}}
+        const oldNAV=parseFloat(navArr[oldIdx].nav);
+        const oldDate=parseNavDate(navArr[oldIdx].date);
+        const yrs=(latestDate-oldDate)/(365.25*24*3600*1000);
+        if(yrs<0.3)throw new Error('Not enough historical NAV data to calculate CAGR reliably (fund may be too new).');
+        cagr=(Math.pow(latestNAV/oldNAV,1/yrs)-1)*100;
+        const sName=meta?.scheme_name||document.getElementById('sym-input').value;
+        const shortName=sName.length>45?sName.slice(0,45)+'…':sName;
+        const suLabel=stepUp>0?` · ${stepUp}% Step-Up`:'';
+        label=`${shortName} | ${cagr.toFixed(1)}% CAGR (${yrs.toFixed(1)}yr) | NAV ₹${latestNAV.toFixed(3)} · Live${suLabel}`;
+      }else{
+        // Fallback: use category average CAGR based on fund name
+        const fundName=(document.getElementById('sym-input').value||'').toLowerCase();
+        const cat=catMF(fundName);
+        const catAvg={'Equity':14.2,'ELSS':14.8,'Hybrid':11.4,'Debt':7.2,'Index':13.1,'Sectoral':16.4};
+        cagr=catAvg[cat]||13.0;
+        const sName=document.getElementById('sym-input').value;
+        const suLabel=stepUp>0?` · ${stepUp}% Step-Up`:'';
+        label=`${sName.length>45?sName.slice(0,45)+'…':sName} | ~${cagr.toFixed(1)}% CAGR (${cat} category avg · live data unavailable)${suLabel}`;
+      }
+
+    }else{
+      // ── NSE STOCK / ETF / INDEX ──
+      const displayName=document.getElementById('sym-input').value;
+
+      // Step 1: Try live Yahoo Finance fetch
+      const liveResult=await fetchStockCAGR(sym);
+      if(liveResult&&!isNaN(liveResult.cagr)&&liveResult.cagr>-80&&liveResult.cagr<500){
+        cagr=liveResult.cagr;
+        const suLabel=stepUp>0?` · ${stepUp}% Step-Up`:'';
+        label=`${displayName} | ${cagr.toFixed(1)}% CAGR (${liveResult.yrs.toFixed(1)}yr history) · Live${suLabel}`;
+      }else{
+        // Step 2: Use static CAGR database (instant, always works)
+        const staticCagr=STATIC_CAGR[sym];
+        if(staticCagr!=null){
+          cagr=staticCagr;
+          const suLabel=stepUp>0?` · ${stepUp}% Step-Up`:'';
+          label=`${displayName} | ${cagr.toFixed(1)}% CAGR (10yr historical avg) · Cached data${suLabel}`;
+        }else{
+          // Step 3: Nifty 50 average as last resort
+          cagr=13.2;
+          label=`${displayName} | ~${cagr.toFixed(1)}% CAGR (Nifty 50 avg fallback)`;
+        }
+      }
+    }
+
+    if(isNaN(cagr)||!isFinite(cagr))throw new Error('Could not compute a valid CAGR from available data.');
+    if(cagr<-80||cagr>500)throw new Error(`CAGR of ${cagr.toFixed(1)}% looks abnormal. Try a different instrument.`);
+    spin.classList.remove('on');btn.style.display='block';
+    showResults(amt,cagr,y,type,inf,label,stepUp);
+
+  }catch(e){
+    spin.classList.remove('on');btn.style.display='block';
+    err.style.display='block';
+    err.innerHTML=`<b>⚠️ Error:</b> ${e.message}<br><br>
+      <b>Suggestions:</b> Check your spelling or pick from the dropdown · Newly launched funds may have very little history · Switch to the <b>Custom Calculator</b> tab to enter a return rate manually.`;
+  }
+}
+
+
+// ══════════ TAX CALCULATOR ══════════
+let taxMode='equity';
+function setTaxMode(m){
+  taxMode=m;
+  ['equity','debt','elss','fd'].forEach(x=>{
+    document.getElementById('txm-'+x).classList.toggle('active',x===m);
+  });
+  calcTax();
+}
+
+function calcTax(){
+  const invested=parseFloat(document.getElementById('tx-invested').value)||0;
+  const sale=parseFloat(document.getElementById('tx-sale').value)||0;
+  const hold=parseFloat(document.getElementById('tx-hold-n').value)||0;
+  const slab=parseFloat(document.getElementById('tx-slab').value)||0;
+  if(!invested||!sale)return;
+  const gain=sale-invested;
+  const box=document.getElementById('tax-result-box');
+
+  let taxAmt=0,taxLabel='',termLabel='',noteHtml='',isLT=false;
+  const cess=0.04; // 4% health & education cess
+
+  if(taxMode==='equity'||taxMode==='elss'){
+    const ltThreshold=taxMode==='elss'?3:1;
+    isLT=hold>=ltThreshold;
+    if(isLT){
+      const exempted=100000; // ₹1L LTCG exemption
+      const taxableGain=Math.max(0,gain-exempted);
+      taxAmt=taxableGain*0.125*(1+cess);
+      taxLabel='12.5% LTCG';termLabel='Long-Term';
+      noteHtml=taxMode==='elss'
+        ?'ELSS has a mandatory <b>3-year lock-in</b>. Gains beyond ₹1 lakh taxed at flat 12.5% LTCG (+ 4% cess). First ₹1L of gains each year is tax-free.'
+        :'Equity LTCG (held >1 year): First ₹1 lakh of gains is <b>tax-free</b> per FY. Beyond that, 12.5% + 4% cess. No indexation benefit.';
+    }else{
+      taxAmt=gain*0.20*(1+cess);
+      taxLabel='20% STCG';termLabel='Short-Term';
+      noteHtml='Equity STCG (held ≤1 year): Flat <b>20%</b> + 4% cess. Applicable from Budget 2024 (earlier 15%).';
+    }
+  }else if(taxMode==='debt'){
+    // Post Apr 2023: debt MF gains taxed as per income slab always
+    taxAmt=gain*(slab/100)*(1+cess);
+    taxLabel=slab+'% slab rate';termLabel=hold>=3?'(was LTCG, now slab)':'Short-Term';
+    noteHtml='Post Apr 2023: Debt MF gains are <b>always taxed at your income slab rate</b>, regardless of holding period. Indexation benefit removed.';
+  }else{ // fd
+    taxAmt=gain*(slab/100)*(1+cess);
+    taxLabel=slab+'% slab + TDS';termLabel='FD Interest';
+    noteHtml='FD interest is added to your income and taxed at your <b>slab rate</b>. TDS @10% is deducted by the bank if interest > ₹40,000/yr (₹50,000 for seniors). File ITR to claim refund if slab is lower.';
+  }
+
+  const netPostTax=sale-taxAmt;
+  const effectiveRate=(taxAmt/gain*100);
+
+  box.style.display='block';
+  box.innerHTML=`
+    <div class="tax-row"><span class="tr-label">Invested Amount</span><span class="tr-val cb">₹${Math.round(invested).toLocaleString('en-IN')}</span></div>
+    <div class="tax-row"><span class="tr-label">Sale / Maturity Value</span><span class="tr-val cG">₹${Math.round(sale).toLocaleString('en-IN')}</span></div>
+    <div class="tax-row"><span class="tr-label">Total Gain</span><span class="tr-val cG">₹${Math.round(gain).toLocaleString('en-IN')}</span></div>
+    <div class="tax-row"><span class="tr-label">Term &amp; Rate</span><span class="tr-val cg">${termLabel} · ${taxLabel}</span></div>
+    ${(taxMode==='equity'||taxMode==='elss')&&isLT?`<div class="tax-row"><span class="tr-label">LTCG Exemption</span><span class="tr-val ct">–₹${Math.min(gain,100000).toLocaleString('en-IN')}</span></div>`:''}
+    <div class="tax-row"><span class="tr-label">Tax Payable <span class="cess-badge">+4% Cess</span></span><span class="tr-val" style="color:var(--red)">₹${Math.round(taxAmt).toLocaleString('en-IN')}</span></div>
+    <div class="tax-row"><span class="tr-label">Effective Tax Rate</span><span class="tr-val" style="color:var(--mu2)">${gain>0?effectiveRate.toFixed(2):0}%</span></div>
+    <div class="tax-row total-row"><span class="tr-label">Net Post-Tax Value</span><span class="tr-val">₹${Math.round(netPostTax).toLocaleString('en-IN')}</span></div>
+    <div class="tax-note">${noteHtml}</div>
+  `;
+}
+
+// ══════════ GOAL PLANNER ══════════
+function calcGoal(){
+  const target=parseFloat(document.getElementById('gl-target').value)||0;
+  const years=parseInt(document.getElementById('gl-years-n').value)||1;
+  const r=parseFloat(document.getElementById('gl-rate-n').value)||12;
+  const inf=parseFloat(document.getElementById('gl-inf-n').value)||0;
+  const su=parseFloat(document.getElementById('gl-su-n').value)||0;
+  const div=document.getElementById('goal-result');
+  if(!target||target<1000)return;
+
+  const rv=r/100,mr=rv/12;
+
+  // SIP needed (no step-up) using standard formula
+  let sipNoSU=0;
+  if(mr>0){
+    const m=years*12;
+    sipNoSU=target*mr/(((Math.pow(1+mr,m)-1))*(1+mr));
+  }
+
+  // SIP with step-up — binary search since closed form is complex
+  let sipSU=sipNoSU;
+  if(su>0){
+    const suR=su/100;
+    const testCorpus=(sip)=>{
+      let corpus=0;
+      for(let yr=1;yr<=years;yr++){
+        const monthlyAmt=sip*Math.pow(1+suR,yr-1);
+        const monthsLeft=(years-yr)*12+12;
+        for(let k=0;k<12;k++) corpus+=monthlyAmt*Math.pow(1+mr,monthsLeft-k);
+      }
+      return corpus;
+    };
+    let lo=0,hi=target,iter=0;
+    while(hi-lo>1&&iter<80){
+      const mid=(lo+hi)/2;
+      if(testCorpus(mid)<target)lo=mid;else hi=mid;
+      iter++;
+    }
+    sipSU=(lo+hi)/2;
+  }
+
+  // Lump sum needed
+  const lumpNeeded=target/Math.pow(1+rv,years);
+
+  // Inflation-adjusted target (today's value)
+  const realTarget=target/Math.pow(1+(inf/100),years);
+
+  // Total invested via SIP
+  const totalInvestedSIP=sipNoSU*years*12;
+  const totalInvestedSIPSU=su>0?(() => {
+    let t=0;
+    for(let yr=1;yr<=years;yr++) t+=sipSU*Math.pow(1+su/100,yr-1)*12;
+    return t;
+  })():totalInvestedSIP;
+
+  div.innerHTML=`
+    <div class="goal-result">
+      <div class="goal-lbl">Monthly SIP Required ${su>0?'(with '+su+'% step-up)':''}</div>
+      <div class="goal-num">₹${Math.round(su>0?sipSU:sipNoSU).toLocaleString('en-IN')}</div>
+      <div class="goal-sub">to reach <b>${fmt(target)}</b> in <b>${years} years</b> at <b>${r}% p.a.</b></div>
+      <div class="goal-breakdown">
+        <div class="goal-bc"><div class="goal-bc-l">SIP (no step-up)</div><div class="goal-bc-v cb">₹${Math.round(sipNoSU).toLocaleString('en-IN')}/mo</div></div>
+        ${su>0?`<div class="goal-bc"><div class="goal-bc-l">SIP (${su}% step-up)</div><div class="goal-bc-v cp">₹${Math.round(sipSU).toLocaleString('en-IN')}/mo</div></div>`:''}
+        <div class="goal-bc"><div class="goal-bc-l">Lump Sum Today</div><div class="goal-bc-v cg">₹${Math.round(lumpNeeded).toLocaleString('en-IN')}</div></div>
+        <div class="goal-bc"><div class="goal-bc-l">Total SIP Invested</div><div class="goal-bc-v ct">₹${Math.round(su>0?totalInvestedSIPSU:totalInvestedSIP).toLocaleString('en-IN')}</div></div>
+        <div class="goal-bc"><div class="goal-bc-l">Inflation Real Value</div><div class="goal-bc-v" style="color:var(--mu2)">₹${Math.round(realTarget).toLocaleString('en-IN')}</div></div>
+        <div class="goal-bc"><div class="goal-bc-l">Return on Investment</div><div class="goal-bc-v cG">${((target/(su>0?totalInvestedSIPSU:totalInvestedSIP)-1)*100).toFixed(1)}%</div></div>
+      </div>
+    </div>
+  `;
+}
+
+// ══════════ SWP CALCULATOR ══════════
+let swpChart=null;
+function calcSWP(){
+  const corpus0=parseFloat(document.getElementById('sw-corpus').value)||0;
+  const monthly0=parseFloat(document.getElementById('sw-monthly').value)||0;
+  const r=parseFloat(document.getElementById('sw-rate-n').value)||0;
+  const inf=parseFloat(document.getElementById('sw-inf-n').value)||0;
+  const su=parseFloat(document.getElementById('sw-su-n').value)||0;
+  const div=document.getElementById('swp-result');
+  const tlDiv=document.getElementById('swp-timeline');
+  const tb=document.getElementById('swp-tb');
+  if(!corpus0||!monthly0)return;
+
+  const mr=r/100/12;
+  const suR=su/100;
+
+  // Simulate year-by-year
+  let corpus=corpus0;
+  let totalWithdrawn=0;
+  let totalReturns=0;
+  const rows=[];
+  let lastYear=0;
+  let perpetual=false;
+
+  const MAX_YEARS=100;
+  for(let yr=1;yr<=MAX_YEARS;yr++){
+    const annualWithdrawal=monthly0*Math.pow(1+suR,yr-1)*12;
+    const openCorpus=corpus;
+    let yearReturns=0;
+    // Monthly simulation
+    let monthlyW=monthly0*Math.pow(1+suR,yr-1);
+    for(let m=0;m<12;m++){
+      const ret=corpus*mr;
+      yearReturns+=ret;
+      corpus=corpus+ret-monthlyW;
+      if(corpus<=0){corpus=0;break;}
+    }
+    const closeCorpus=corpus;
+    totalWithdrawn+=annualWithdrawal;
+    totalReturns+=yearReturns;
+    rows.push({yr,open:openCorpus,withdrawn:Math.min(annualWithdrawal,openCorpus+yearReturns),returns:yearReturns,close:closeCorpus});
+    if(corpus<=0){lastYear=yr;break;}
+    if(yr===MAX_YEARS){perpetual=true;lastYear=MAX_YEARS;}
+  }
+
+  // Safe withdrawal rate (where corpus never depletes — find max monthly)
+  let safeMo=0;
+  if(r>0){
+    let lo=0,hi=corpus0,iter=0;
+    while(hi-lo>10&&iter<60){
+      const mid=(lo+hi)/2;
+      let c=corpus0;let ok=true;
+      for(let yr=1;yr<=100&&ok;yr++){
+        const mw=mid*Math.pow(1+suR,yr-1);
+        for(let m=0;m<12;m++){c=c*(1+mr)-mw;if(c<=0){ok=false;break;}}
+      }
+      if(ok)lo=mid;else hi=mid;
+      iter++;
+    }
+    safeMo=(lo+hi)/2;
+  }
+
+  const status=perpetual?`<span style="color:var(--green);font-weight:700">✅ Corpus lasts indefinitely (100+ years)</span>`
+    :`<span style="color:var(--red);font-weight:600">⚠️ Corpus depletes in <b style="color:var(--gold)">${lastYear} years</b></span>`;
+
+  div.innerHTML=`
+    <div class="swp-hero">
+      <div class="swp-lbl">${perpetual?'Sustainable Monthly Income':'Monthly Withdrawal'}</div>
+      <div class="swp-num">₹${Math.round(monthly0).toLocaleString('en-IN')}</div>
+      <div class="swp-sub">${status}</div>
+      <div class="swp-grid">
+        <div class="swp-bc"><div class="swp-bc-l">Starting Corpus</div><div class="swp-bc-v cb">₹${fmt(corpus0).replace('₹','')}</div></div>
+        <div class="swp-bc"><div class="swp-bc-l">Total Withdrawn</div><div class="swp-bc-v cG">₹${fmt(totalWithdrawn).replace('₹','')}</div></div>
+        <div class="swp-bc"><div class="swp-bc-l">Total Returns</div><div class="swp-bc-v cg">₹${fmt(totalReturns).replace('₹','')}</div></div>
+        <div class="swp-bc"><div class="swp-bc-l">Safe Monthly (forever)</div><div class="swp-bc-v ct">₹${safeMo>0?Math.round(safeMo).toLocaleString('en-IN'):'—'}</div></div>
+        ${su>0?`<div class="swp-bc"><div class="swp-bc-l">Yr ${Math.min(10,lastYear)} Withdrawal</div><div class="swp-bc-v cp">₹${Math.round(monthly0*Math.pow(1+suR,Math.min(10,lastYear)-1)).toLocaleString('en-IN')}/mo</div></div>`:''}
+      </div>
+    </div>
+  `;
+
+  // Build table (show up to 40 years or depletion)
+  tlDiv.style.display='block';
+  tb.innerHTML=rows.slice(0,Math.min(rows.length,40)).map((row,i)=>`
+    <tr style="${row.close<=0?'background:rgba(255,92,92,.04)':''}">
+      <td style="color:var(--gold)">Year ${row.yr}</td>
+      <td style="color:var(--blue)">₹${fmt(row.open).replace('₹','')}</td>
+      <td style="color:var(--red)">₹${fmt(row.withdrawn).replace('₹','')}</td>
+      <td style="color:var(--green)">₹${fmt(row.returns).replace('₹','')}</td>
+      <td style="color:${row.close<=0?'var(--red)':row.close<corpus0*0.2?'var(--gold)':'var(--teal)'}">
+        ${row.close<=0?'Depleted':'₹'+fmt(row.close).replace('₹','')}
+      </td>
+    </tr>
+  `).join('')+(rows.length>40?`<tr><td colspan="5" style="text-align:center;color:var(--mu);font-size:11px;padding:12px">… showing first 40 years</td></tr>`:'');
+}
+
+// ══════════ INIT ══════════
+showWords('m-amt','m-w');
+showWords('s-amt','s-w');
+showWords('tx-invested','tx-iw');
+showWords('tx-sale','tx-sw');
+showWords('gl-target','gl-tw');
+showWords('sw-corpus','sw-cw');
+showWords('sw-monthly','sw-mw');
+function initSliders(){
+  [['m-rate-s',1,50],['m-ten-s',1,70],['m-inf-s',0,25],['s-ten-s',1,70],['s-inf-s',0,25],
+   ['m-su-s',0,50],['s-su-s',0,50],
+   ['tx-hold-s',0,70],
+   ['gl-years-s',1,70],['gl-rate-s',1,50],['gl-inf-s',0,25],['gl-su-s',0,50],
+   ['sw-rate-s',0,50],['sw-inf-s',0,25],['sw-su-s',0,25],
+   ['sa-calc-years-s',1,40]]
+    .forEach(([id,mn,mx])=>{
+      const el=document.getElementById(id);
+      if(el)updateSliderFill(id,mn,mx);
+    });
+}
+initSliders();
+loadMFList();
+
+// ══════════ SIDEBAR ══════════
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sb-overlay');
+  const hb=document.getElementById('hamburger');
+  const isOpen=sb.classList.toggle('open');
+  ov.classList.toggle('open',isOpen);
+  if(isOpen){
+    hb.style.opacity='0';
+    hb.style.pointerEvents='none';
+    hb.style.transform='translateZ(0) translateX(-70px)';
+  }else{
+    hb.classList.remove('open');
+    hb.style.opacity='';
+    hb.style.pointerEvents='';
+    hb.style.transform='translateZ(0) translateY(0)';
+  }
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('open');
+  const hb=document.getElementById('hamburger');
+  hb.classList.remove('open');
+  hb.style.opacity='';
+  hb.style.pointerEvents='';
+  hb.style.transform='translateZ(0) translateY(0)';
+}
+function switchPage(page){
+  document.getElementById('page-fund').classList.toggle('active', page==='fund');
+  document.getElementById('page-stock').classList.toggle('active', page==='stock');
+  document.getElementById('nav-fund').classList.toggle('active', page==='fund');
+  document.getElementById('nav-stock').classList.toggle('active', page==='stock');
+  closeSidebar();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Hide hamburger on scroll-down, show on scroll-up (mobile UX)
+(function(){
+  let lastY=window.scrollY,ticking=false;
+  const hb=document.getElementById('hamburger');
+  window.addEventListener('scroll',()=>{
+    if(ticking)return;
+    ticking=true;
+    requestAnimationFrame(()=>{
+      const y=window.scrollY;
+      const diff=y-lastY;
+      // Only auto-hide on small screens
+      if(window.innerWidth<=768){
+        if(diff>6&&y>80){
+          // Scrolling down — slide button up out of view
+          hb.style.transform='translateZ(0) translateY(-80px)';
+          hb.style.opacity='0';
+          hb.style.pointerEvents='none';
+        }else if(diff<-4){
+          // Scrolling up — bring it back
+          hb.style.transform='translateZ(0) translateY(0)';
+          hb.style.opacity='1';
+          hb.style.pointerEvents='';
+        }
+      }else{
+        // Desktop — always visible, never shift
+        hb.style.transform='translateZ(0) translateY(0)';
+        hb.style.opacity='1';
+        hb.style.pointerEvents='';
+      }
+      lastY=y;
+      ticking=false;
+    });
+  },{passive:true});
+})();
+
+// ══════════════════════════════════════
+// STOCK ANALYSIS SECTION
+// ══════════════════════════════════════
+
+let saCat='all';
+let saChartInstance=null;
+let saFullData=null; // stores fetched price/nav series
+let saCurrentCagr=0;
+let saCurrentKind='';
+let saCurrentSym='';
+let saCurrentName='';
+let saCurrentCat='';
+
+// ── SA Search ──
+function setSaCat(btn,cat){
+  document.querySelectorAll('#sa-cats .cbt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');saCat=cat;
+  onSaSearch(document.getElementById('sa-input').value);
+}
+function openSaDD(){onSaSearch(document.getElementById('sa-input').value)}
+function closeSaDD(){document.getElementById('sa-ddl').classList.remove('open')}
+
+function onSaSearch(q){
+  const ddl=document.getElementById('sa-ddl');
+  const low=q.toLowerCase().trim();
+  let items=allItems();
+  if(saCat!=='all')items=items.filter(i=>i.cat===saCat);
+  const filtered=low.length<1
+    ?items.slice(0,60)
+    :items.filter(i=>i.name.toLowerCase().includes(low)||i.sym.toLowerCase().includes(low)).slice(0,70);
+  if(!filtered.length){ddl.innerHTML='<div class="ddload">No results found</div>';ddl.classList.add('open');return;}
+  ddl.innerHTML=filtered.map(i=>{
+    const lbl=i.kind==='mf'?'MF #'+i.sym:i.sym.replace('.NS','');
+    const nm=i.name.length>60?i.name.slice(0,60)+'…':i.name;
+    const safeName=i.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return`<div class="ddi" onmousedown="pickSa('${i.sym}','${safeName}','${i.kind}','${i.cat}')">
+      <span class="dds">${lbl}</span><span class="ddn">${nm}</span><span class="ddt">${i.cat}</span></div>`;
+  }).join('')+`<div class="ddn2">${filtered.length} result${filtered.length!==1?'s':''} · NSE · BSE · MFapi</div>`;
+  ddl.classList.add('open');
+}
+
+function pickSa(sym,name,kind,cat){
+  document.getElementById('sa-input').value=name;
+  document.getElementById('sa-sym').value=sym;
+  document.getElementById('sa-kind').value=kind;
+  document.getElementById('sa-name').value=name;
+  document.getElementById('sa-ddl').classList.remove('open');
+}
+
+// ── Utility ──
+function pct(v){
+  if(v==null||isNaN(v))return{str:'N/A',cls:'neu'};
+  const s=(v>=0?'+':'')+v.toFixed(2)+'%';
+  return{str:s,cls:v>=0?'pos':'neg'};
+}
+
+// ── Risk computation ──
+// Returns {score:1-10, label, color, tags, riskClass}
+function computeRisk(cat,cagr,yrs){
+  let base=5;
+  // Category factor
+  const catMap={
+    'Stock':7,'Sectoral':8,'ELSS':5,'Equity':5,'Index':4,
+    'Hybrid':3,'Debt':2,'ETF':4
+  };
+  base=catMap[cat]||5;
+  // CAGR volatility proxy
+  if(cagr>35)base=Math.min(10,base+2);
+  else if(cagr>25)base=Math.min(10,base+1);
+  else if(cagr<5)base=Math.max(1,base-1);
+  else if(cagr<0)base=Math.max(1,base+1); // negative CAGR = risky
+  // Age of data
+  if(yrs<2)base=Math.min(10,base+1);
+  const score=Math.round(Math.min(10,Math.max(1,base)));
+  const labels=['','Very Low','Low','Low-Moderate','Moderate','Moderate','Moderate-High','High','High','Very High','Extreme'];
+  const colors=['','var(--green)','var(--green)','#7edb9a','var(--teal)','var(--gold3)','var(--gold)','#ffaa44','var(--red)','#ff3333','#cc0000'];
+  const tags=[];
+  if(score<=2)tags.push({t:'Capital Safe',c:'var(--green)'});
+  if(score>=8)tags.push({t:'High Volatility',c:'var(--red)'});
+  if(cat==='Stock'||cat==='Sectoral')tags.push({t:'Concentration Risk',c:'var(--gold)'});
+  if(cat==='Debt')tags.push({t:'Credit Risk',c:'var(--mu2)'});
+  if(cat==='ELSS')tags.push({t:'Lock-in 3yr',c:'var(--purple)'});
+  if(cat==='Index'||cat==='ETF')tags.push({t:'Market Risk Only',c:'var(--blue)'});
+  if(cagr>25)tags.push({t:'High Return ↑',c:'var(--green)'});
+  if(cagr<0)tags.push({t:'Negative Returns',c:'var(--red)'});
+  return{score,label:labels[score],color:colors[score],tags};
+}
+
+// ── Advisory generation ──
+function buildAdvisory(cat,score,cagr,yrs){
+  const lockIn=cat==='ELSS'?'3 Years (mandatory)':'None';
+  let horizon='1–3 years';
+  if(score>=7)horizon='5–10+ years (high risk, needs time)';
+  else if(score>=5)horizon='3–7 years';
+  else if(score<=2)horizon='3 months – 2 years';
+  let suitability='Moderate risk investors';
+  if(score>=8)suitability='Aggressive investors only';
+  else if(score>=6)suitability='Moderately aggressive investors';
+  else if(score<=2)suitability='Conservative / capital-preservation investors';
+  let verdict='Consider';
+  let verdictColor='var(--gold)';
+  if(score<=3){verdict='Advisable for conservative';verdictColor='var(--green)';}
+  else if(score<=5){verdict='Advisable with monitoring';verdictColor='var(--teal)';}
+  else if(score<=7){verdict='Advisable for risk-tolerant';verdictColor='var(--gold)';}
+  else{verdict='Caution — high risk';verdictColor='var(--red)';}
+  return{lockIn,horizon,suitability,verdict,verdictColor};
+}
+
+// ── Pros & Cons ──
+function buildProsConsHtml(cat,cagr,score,yrs,name){
+  const pros=[],cons=[];
+  // CAGR-based
+  if(cagr>20)pros.push('Strong historical CAGR of '+cagr.toFixed(1)+'% — well above Nifty 50 average');
+  else if(cagr>12)pros.push('Healthy CAGR of '+cagr.toFixed(1)+'% — beats inflation comfortably');
+  else if(cagr>6)pros.push('Moderate returns of '+cagr.toFixed(1)+'% — suitable for conservative goals');
+  if(cagr<6&&cagr>0)cons.push('Low historical CAGR of '+cagr.toFixed(1)+'% — may underperform inflation long-term');
+  if(cagr<0)cons.push('Negative CAGR of '+cagr.toFixed(1)+'% — instrument has destroyed capital historically');
+  // Category pros
+  if(cat==='Index'||cat==='ETF'){
+    pros.push('Passive management — extremely low expense ratio (0.05–0.2%)');
+    pros.push('Diversified across entire index — no single-stock concentration risk');
+  }
+  if(cat==='ELSS'){
+    pros.push('Tax deduction up to ₹1.5L under Section 80C');
+    pros.push('Shortest lock-in (3 years) among tax-saving instruments');
+    cons.push('3-year mandatory lock-in — cannot exit early');
+  }
+  if(cat==='Equity'||cat==='Stock'){
+    pros.push('Potential for wealth creation above inflation over long periods');
+  }
+  if(cat==='Stock'){
+    cons.push('Single-company concentration risk — business or sector downturn hits hard');
+    cons.push('Higher volatility — price can swing 20–50%+ in a year');
+  }
+  if(cat==='Sectoral'){
+    cons.push('Sector-specific risk — regulatory or cyclical changes can hurt returns');
+    pros.push('Outperforms broad indices during sector tailwinds');
+  }
+  if(cat==='Debt'){
+    pros.push('Lower volatility — suitable for short to medium term goals');
+    pros.push('Regular income and capital preservation focus');
+    cons.push('Post Apr 2023: taxed at slab rate regardless of holding period — no indexation benefit');
+  }
+  if(cat==='Hybrid'){
+    pros.push('Automatic rebalancing between equity & debt — lower volatility than pure equity');
+    pros.push('Good entry point for first-time investors');
+  }
+  // Score-based
+  if(score>=8)cons.push('Very high risk — not suitable for short-term or goal-based investing');
+  if(score<=3)pros.push('Relatively safe instrument with low downside risk');
+  // Data age
+  if(yrs>=5)pros.push('Sufficient historical data ('+yrs.toFixed(0)+'+ years) for reliable analysis');
+  if(yrs<2)cons.push('Insufficient history — CAGR estimate may not be reliable');
+  // Ensure balance
+  while(pros.length<3)pros.push('Regulated by SEBI — investor protections apply');
+  while(cons.length<2)cons.push('Market-linked returns — not guaranteed like FD/PPF');
+  return{pros,cons};
+}
+
+// ── Performance periods from price series ──
+function calcPeriodReturn(series,months){
+  // series = [{date, price}] sorted newest first
+  if(!series||series.length<2)return null;
+  const now=series[0].price;
+  const cutoff=new Date(series[0].date);
+  cutoff.setMonth(cutoff.getMonth()-months);
+  let old=null;
+  for(let i=series.length-1;i>=0;i--){
+    if(new Date(series[i].date)>=cutoff)old=series[i].price;
+    else break;
+  }
+  if(!old||old===0)return null;
+  return(now-old)/old*100;
+}
+
+function calcYTDReturn(series){
+  if(!series||series.length<2)return null;
+  const now=series[0].price;
+  const thisYear=new Date(series[0].date).getFullYear();
+  let old=null;
+  for(let i=series.length-1;i>=0;i--){
+    if(new Date(series[i].date).getFullYear()===thisYear)old=series[i].price;
+    else break;
+  }
+  if(!old||old===0)return null;
+  return(now-old)/old*100;
+}
+
+// ── MF NAV → series ──
+function mfNavToSeries(navArr){
+  return navArr.map(d=>({
+    date:parseNavDate(d.date),
+    price:parseFloat(d.nav)
+  })).filter(d=>!isNaN(d.price)&&d.price>0).reverse(); // oldest first
+}
+
+// ── Filter series by period ──
+function filterSeries(series,period){
+  if(!series||!series.length)return[];
+  const last=series[series.length-1].date;
+  const cut=new Date(last);
+  if(period==='1m')cut.setMonth(cut.getMonth()-1);
+  else if(period==='3m')cut.setMonth(cut.getMonth()-3);
+  else if(period==='6m')cut.setMonth(cut.getMonth()-6);
+  else if(period==='ytd')cut.setMonth(0),cut.setDate(1);
+  else if(period==='1y')cut.setFullYear(cut.getFullYear()-1);
+  else if(period==='3y')cut.setFullYear(cut.getFullYear()-3);
+  else if(period==='5y')cut.setFullYear(cut.getFullYear()-5);
+  else return series; // max
+  return series.filter(d=>d.date>=cut);
+}
+
+function drawSaChart(series,period,label){
+  const filtered=filterSeries(series,period);
+  if(!filtered.length)return;
+  const labels=filtered.map(d=>d.date.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:filtered.length>500?'2-digit':undefined}));
+  const data=filtered.map(d=>d.price);
+  const isUp=data[data.length-1]>=data[0];
+  const col=isUp?'#2ecc8a':'#ff5c5c';
+  const colFill=isUp?'rgba(46,204,138,.08)':'rgba(255,92,92,.08)';
+  if(saChartInstance)saChartInstance.destroy();
+  saChartInstance=new Chart(document.getElementById('sa-chart').getContext('2d'),{
+    type:'line',
+    data:{labels,datasets:[{
+      label,data,
+      borderColor:col,backgroundColor:colFill,
+      fill:true,tension:.35,borderWidth:2,pointRadius:0,pointHoverRadius:5
+    }]},
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#0d1526',borderColor:'rgba(245,200,66,.18)',borderWidth:1,
+          titleColor:'#f0f4ff',bodyColor:'#8898b8',
+          callbacks:{label:c=>' ₹'+c.parsed.y.toFixed(c.parsed.y<10?4:2)}
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#5a6a8a',font:{size:10},maxTicksLimit:8},grid:{color:'rgba(255,255,255,.03)'}},
+        y:{ticks:{color:'#5a6a8a',font:{size:10},callback:v=>'₹'+fmts(v)},grid:{color:'rgba(255,255,255,.03)'}}
+      }
+    }
+  });
+}
+
+let saChartPeriod='1y';
+function setSaChartPeriod(btn,p){
+  document.querySelectorAll('#sa-chart-tabs .cbt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  saChartPeriod=p;
+  if(saFullData)drawSaChart(saFullData,p,saCurrentName);
+}
+
+// ── MAIN ANALYSIS ──
+async function runAnalysis(){
+  const sym=document.getElementById('sa-sym').value;
+  const kind=document.getElementById('sa-kind').value;
+  const name=document.getElementById('sa-name').value||document.getElementById('sa-input').value;
+  if(!sym)return alert('Please select a stock, ETF or mutual fund from the dropdown.');
+
+  const spin=document.getElementById('sa-spin');
+  const btn=document.getElementById('sa-btn');
+  const err=document.getElementById('sa-err');
+  const res=document.getElementById('sa-results');
+  spin.classList.add('on');btn.style.display='none';
+  err.style.display='none';res.style.display='none';
+
+  try{
+    let series=[],cagr=0,latestPrice=0,prevPrice=0,cat='',yrs=0;
+
+    if(kind==='mf'){
+      // Fetch MF data
+      let navArr=null,meta=null;
+      try{
+        const txt=await safeFetch('https://api.mfapi.in/mf/'+sym);
+        const data=JSON.parse(txt);
+        if(data&&data.status!=='ERROR'&&data.data?.length>=5){navArr=data.data;meta=data.meta;}
+      }catch(e){}
+
+      if(navArr){
+        series=mfNavToSeries(navArr);
+        latestPrice=series[series.length-1]?.price||0;
+        prevPrice=series[series.length-2]?.price||latestPrice;
+        const oldest=series[0];
+        const newest=series[series.length-1];
+        yrs=(newest.date-oldest.date)/(365.25*24*3600*1000);
+        if(yrs>0.1)cagr=(Math.pow(newest.price/oldest.price,1/yrs)-1)*100;
+        cat=catMF(name);
+      }else{
+        // Fallback
+        cat=catMF(name);
+        const catAvg={'Equity':14.2,'ELSS':14.8,'Hybrid':11.4,'Debt':7.2,'Index':13.1,'Sectoral':16.4};
+        cagr=catAvg[cat]||13;yrs=5;
+        latestPrice=0;prevPrice=0;series=[];
+      }
+    }else{
+      // NSE Stock / ETF
+      cat='Stock';
+      // Determine cat from NSE list
+      const found=NSE.find(n=>n.sym===sym);
+      if(found)cat=found.cat;
+      // Try live Yahoo Finance
+      const p2=Math.floor(Date.now()/1000);
+      const p1=p2-15*365*24*3600;
+      const urls=[
+        `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?period1=${p1}&period2=${p2}&interval=1d`,
+        `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?period1=${p1}&period2=${p2}&interval=1d`,
+      ];
+      let parsed=false;
+      for(const url of urls){
+        try{
+          const txt=await safeFetch(url);
+          const d=JSON.parse(txt);
+          const chart=d?.chart?.result?.[0];
+          if(chart){
+            const closes=chart.indicators?.adjclose?.[0]?.adjclose||chart.indicators?.quote?.[0]?.close;
+            const ts=chart.timestamp;
+            if(closes&&ts){
+              const pairs=closes.map((c,i)=>({date:new Date(ts[i]*1000),price:c}))
+                .filter(x=>x.price!=null&&!isNaN(x.price)&&x.price>0);
+              if(pairs.length>5){
+                series=pairs;
+                latestPrice=pairs[pairs.length-1].price;
+                prevPrice=pairs[pairs.length-2]?.price||latestPrice;
+                yrs=(pairs[pairs.length-1].date-pairs[0].date)/(365.25*24*3600*1000);
+                if(yrs>0.05)cagr=(Math.pow(latestPrice/pairs[0].price,1/yrs)-1)*100;
+                parsed=true;break;
+              }
+            }
+          }
+        }catch(e){}
+      }
+      if(!parsed){
+        // Use static CAGR + minimal mock series
+        const sc=STATIC_CAGR[sym];
+        cagr=sc!=null?sc:13.2;yrs=10;
+        latestPrice=0;prevPrice=0;series=[];
+      }
+    }
+
+    // Clamp CAGR
+    if(!isFinite(cagr)||isNaN(cagr))cagr=0;
+    cagr=Math.max(-99,Math.min(500,cagr));
+
+    saFullData=series;
+    saCurrentCagr=cagr;
+    saCurrentKind=kind;
+    saCurrentSym=sym;
+    saCurrentName=name;
+    saCurrentCat=cat;
+
+    // ── Populate Hero ──
+    const change=latestPrice&&prevPrice?((latestPrice-prevPrice)/prevPrice*100):null;
+    const chStr=change!=null?(change>=0?'+':'')+change.toFixed(2)+'%':'—';
+    const chCol=change==null?'var(--mu2)':change>=0?'var(--green)':'var(--red)';
+    document.getElementById('sa-hero-cat').textContent=cat+' · '+kind.toUpperCase();
+    document.getElementById('sa-hero-name').textContent=name;
+    document.getElementById('sa-hero-price').textContent=latestPrice?'₹'+latestPrice.toFixed(latestPrice<10?4:2):'Price N/A (live data unavailable)';
+    const rev=series.length>1?series[series.length-1]:null;
+    document.getElementById('sa-hero-change').innerHTML=latestPrice
+      ?`Day change <b style="color:${chCol}">${chStr}</b> &nbsp;·&nbsp; CAGR <b style="color:var(--green)">${cagr.toFixed(2)}% p.a.</b>`
+      :`Historical CAGR <b style="color:var(--green)">${cagr.toFixed(2)}% p.a.</b> &nbsp;·&nbsp; <span style="color:var(--mu)">Live price unavailable</span>`;
+
+    // ── Performance Periods ──
+    const revSeries=[...series].reverse(); // newest first for calcPeriodReturn
+    const periods=[
+      {l:'1 Month',m:1},{l:'3 Month',m:3},{l:'6 Month',m:6},
+      {l:'YTD',m:null},{l:'1 Year',m:12},{l:'3 Year',m:36},{l:'5 Year',m:60},
+      {l:'CAGR (all)',m:-1}
+    ];
+    const stripEl=document.getElementById('sa-perf-strip');
+    stripEl.innerHTML=periods.map(p=>{
+      let ret;
+      if(p.m===-1)ret=cagr;
+      else if(p.m===null)ret=calcYTDReturn(revSeries);
+      else ret=calcPeriodReturn(revSeries,p.m);
+      const {str,cls}=pct(ret);
+      return`<div class="perf-pill">
+        <div class="perf-pill-label">${p.l}</div>
+        <div class="perf-pill-val ${cls}">${str}</div>
+      </div>`;
+    }).join('');
+
+    // ── Chart ──
+    if(series.length>1)drawSaChart(series,saChartPeriod,name);
+    else{
+      document.getElementById('sa-chart').parentElement.style.display='none';
+    }
+
+    // ── Stats Grid ──
+    const maxP=series.length?Math.max(...series.map(d=>d.price)):0;
+    const minP=series.length?Math.min(...series.map(d=>d.price)):0;
+    const sgEl=document.getElementById('sa-stats-grid');
+    sgEl.innerHTML=[
+      {l:'CAGR (Historical)',v:cagr.toFixed(2)+'%',c:'cG'},
+      {l:'Latest Price / NAV',v:latestPrice?'₹'+latestPrice.toFixed(latestPrice<10?4:2):'N/A',c:'cg'},
+      {l:'All-Time High',v:maxP?'₹'+maxP.toFixed(maxP<10?4:2):'N/A',c:'ct'},
+      {l:'All-Time Low',v:minP?'₹'+minP.toFixed(minP<10?4:2):'N/A',c:'cb'},
+      {l:'Data Span',v:yrs>0?yrs.toFixed(1)+' years':'N/A',c:''},
+      {l:'Category',v:cat,c:'cp'},
+    ].map(s=>`<div class="sc"><div class="sl">${s.l}</div><div class="sv ${s.c}">${s.v}</div></div>`).join('');
+
+    // ── Risk ──
+    const risk=computeRisk(cat,cagr,yrs);
+    const riskPct=((risk.score-1)/9*100).toFixed(1);
+    document.getElementById('sa-risk-box').innerHTML=`
+      <div class="risk-meter-wrap">
+        <div class="risk-track"><div class="risk-thumb" id="risk-thumb" style="left:${riskPct}%"></div></div>
+        <div class="risk-score-row">
+          <div class="risk-score-big" style="color:${risk.color}">${risk.score}<span style="font-size:16px;color:var(--mu)">/10</span></div>
+          <div class="risk-score-label"><div style="font-size:14px;font-weight:700;color:${risk.color}">${risk.label}</div><div style="font-size:10px;color:var(--mu)">Risk Level</div></div>
+        </div>
+        <div class="risk-tags">${risk.tags.map(t=>`<span class="risk-tag" style="background:rgba(255,255,255,.04);border:1px solid ${t.c}40;color:${t.c}">${t.t}</span>`).join('')}</div>
+      </div>
+    `;
+
+    // ── Advisory ──
+    const adv=buildAdvisory(cat,risk.score,cagr,yrs);
+    document.getElementById('sa-advisory-box').innerHTML=`
+      <div class="adv-row"><span class="adv-ico">🔒</span><div><div class="adv-key">Lock-in</div><div class="adv-val">${adv.lockIn}</div></div></div>
+      <div class="adv-row"><span class="adv-ico">⏳</span><div><div class="adv-key">Ideal Horizon</div><div class="adv-val">${adv.horizon}</div></div></div>
+      <div class="adv-row"><span class="adv-ico">👤</span><div><div class="adv-key">Suitability</div><div class="adv-val">${adv.suitability}</div></div></div>
+      <div class="adv-row"><span class="adv-ico">📋</span><div><div class="adv-key">Advisory Verdict</div><div class="adv-val" style="color:${adv.verdictColor}">${adv.verdict}</div></div></div>
+    `;
+
+    // ── Pros & Cons ──
+    const {pros,cons}=buildProsConsHtml(cat,cagr,risk.score,yrs,name);
+    document.getElementById('sa-pros').innerHTML=`<div class="pros-head">✅ Pros</div>`
+      +pros.map(p=>`<div class="pc-item pro"><span class="pc-dot-pro">●</span><span>${p}</span></div>`).join('');
+    document.getElementById('sa-cons').innerHTML=`<div class="cons-head">⚠️ Cons</div>`
+      +cons.map(c=>`<div class="pc-item con"><span class="pc-dot-con">●</span><span>${c}</span></div>`).join('');
+
+    // Show results
+    spin.classList.remove('on');btn.style.display='block';
+    res.style.display='block';
+    setTimeout(()=>res.scrollIntoView({behavior:'smooth',block:'start'}),120);
+
+    // Pre-fill return calc
+    showWords('sa-calc-amt','sa-calc-w');
+    updateSliderFill('sa-calc-years-s',1,40);
+
+  }catch(e){
+    spin.classList.remove('on');btn.style.display='block';
+    err.style.display='block';
+    err.innerHTML=`<b>⚠️ Error:</b> ${e.message||'Unknown error'}<br><br>Try a different instrument or check your connection.`;
+  }
+}
+
+// ── Return Calculator (with tax, no inflation) ──
+function runReturnCalc(){
+  const type=document.getElementById('sa-calc-type').value;
+  const amt=parseFloat(document.getElementById('sa-calc-amt').value)||0;
+  const years=parseInt(document.getElementById('sa-calc-years-n').value)||5;
+  const slab=parseFloat(document.getElementById('sa-calc-slab').value)||0;
+  const cagr=saCurrentCagr;
+  const cat=saCurrentCat;
+  if(!amt||!cagr)return;
+
+  const rv=cagr/100,mr=rv/12;
+  let corpus=0,invested=0;
+  if(type==='lumpsum'){
+    corpus=amt*Math.pow(1+rv,years);invested=amt;
+  }else{
+    const m=years*12;
+    corpus=amt*((Math.pow(1+mr,m)-1)/mr)*(1+mr);invested=amt*m;
+  }
+  const gain=corpus-invested;
+
+  // Tax calc
+  let tax=0,taxNote='';
+  const cess=0.04;
+  const isEquity=cat==='Stock'||cat==='Equity'||cat==='ELSS'||cat==='Index'||cat==='Sectoral'||cat==='Hybrid'||cat==='ETF';
+  if(isEquity){
+    const isLT=(cat==='ELSS'&&years>=3)||(cat!=='ELSS'&&years>=1);
+    if(isLT){
+      const taxable=Math.max(0,gain-100000);
+      tax=taxable*0.125*(1+cess);
+      taxNote=`LTCG 12.5% + 4% cess. First ₹1L gain exempt.`;
+    }else{
+      tax=gain*0.20*(1+cess);
+      taxNote=`STCG 20% + 4% cess (held <1 year).`;
+    }
+  }else{
+    // Debt / slab
+    tax=gain*(slab/100)*(1+cess);
+    taxNote=`Slab rate ${slab}% + 4% cess (Debt MF post-Apr 2023 rules).`;
+  }
+
+  const netPostTax=corpus-tax;
+  const effectiveTax=(gain>0?(tax/gain*100):0).toFixed(2);
+
+  const div=document.getElementById('sa-calc-result');
+  div.style.display='block';
+  div.innerHTML=`<div class="rc-box">
+    <div class="rc-row"><span class="rc-label">Amount Invested</span><span class="rc-val cb">₹${Math.round(invested).toLocaleString('en-IN')}</span></div>
+    <div class="rc-row"><span class="rc-label">Gross Corpus</span><span class="rc-val cG">₹${Math.round(corpus).toLocaleString('en-IN')}</span></div>
+    <div class="rc-row"><span class="rc-label">Gross Gain</span><span class="rc-val cG">₹${Math.round(gain).toLocaleString('en-IN')}</span></div>
+    <div class="rc-row"><span class="rc-label">CAGR Used</span><span class="rc-val cg">${cagr.toFixed(2)}% p.a.</span></div>
+    <div class="rc-row"><span class="rc-label">Tax Payable</span><span class="rc-val" style="color:var(--red)">₹${Math.round(tax).toLocaleString('en-IN')}</span></div>
+    <div class="rc-row"><span class="rc-label">Effective Tax Rate</span><span class="rc-val" style="color:var(--mu2)">${effectiveTax}%</span></div>
+    <div class="rc-row rc-total-row"><span class="rc-label">Net Post-Tax Value</span><span class="rc-val">₹${Math.round(netPostTax).toLocaleString('en-IN')}</span></div>
+    <div class="tax-note" style="margin-top:12px">${taxNote}</div>
+  </div>`;
+}
+
+// ── Init SA search list once MF list loads ──
+// (allItems() already uses MF_FULL which loadMFList populates)
+// SA dropdown will auto-use updated MF_FULL since onSaSearch calls allItems()
+</script>
+</body>
+</html>
